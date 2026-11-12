@@ -1,0 +1,49 @@
+name: Prepare Mkvplex Infinity APK release
+
+on:
+  workflow_dispatch:
+    inputs:
+      apk_url:
+        description: Direct HTTPS download URL for the verified ARM64 APK
+        required: true
+        type: string
+      source_url:
+        description: Direct HTTPS download URL for the corresponding source ZIP
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  draft-release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Download APK and source
+        shell: bash
+        env:
+          APK_URL: ${{ inputs.apk_url }}
+          SOURCE_URL: ${{ inputs.source_url }}
+        run: |
+          set -euo pipefail
+          [[ "$APK_URL" == https://* ]] || { echo 'APK URL must use HTTPS'; exit 1; }
+          [[ "$SOURCE_URL" == https://* ]] || { echo 'Source URL must use HTTPS'; exit 1; }
+          curl --fail --location --retry 3 --output Mkvplex-Infinity-v2.1.5-build21500112-ARM64.apk "$APK_URL"
+          curl --fail --location --retry 3 --output Mkvplex-Infinity-v2.1.5-build21500112-SOURCE-ONLY-LITE.zip "$SOURCE_URL"
+          echo 'b8acf93f90a7bef594d22191932639b3f758d452ff876854ccba71165a04d668  Mkvplex-Infinity-v2.1.5-build21500112-ARM64.apk' | sha256sum --check
+          echo 'd7b655012b2021e868be06f415dd1a6bd583ef538561d69e2356b49088d37486  Mkvplex-Infinity-v2.1.5-build21500112-SOURCE-ONLY-LITE.zip' | sha256sum --check
+      - name: Create draft GitHub Release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh release create 'v2.1.5-mkvplex.2' \
+            Mkvplex-Infinity-v2.1.5-build21500112-ARM64.apk \
+            Mkvplex-Infinity-v2.1.5-build21500112-SOURCE-ONLY-LITE.zip \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --title 'Mkvplex Infinity v2.1.5 (ARM64)' \
+            --notes 'Android ARM64 APK; supplied build 21500112. Source archive included. Check corresponding-source completeness, attribution, and third-party distribution rights before publishing.' \
+            --draft
