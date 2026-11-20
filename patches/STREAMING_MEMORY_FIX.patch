@@ -1,0 +1,1449 @@
+diff --git a/app/build.gradle.kts b/app/build.gradle.kts
+--- a/app/build.gradle.kts
++++ b/app/build.gradle.kts
+@@ -47,8 +47,8 @@
+     targetSdk = 36
+     // Stable occupies the top of its version band. Preview uses the next band's commit-count
+     // offset, so Stable -> Preview -> newer Preview -> next Stable is always an Android upgrade.
+-    versionCode = providers.gradleProperty("customVersionCode").map { it.toInt() }.orElse(2150012).get()
+-    versionName = "2.1.5-mkvplex.3"
++    versionCode = providers.gradleProperty("customVersionCode").map { it.toInt() }.orElse(2150013).get()
++    versionName = "2.1.5-mkvplex.4"
+ 
+     vectorDrawables {
+       useSupportLibrary = true
+@@ -252,6 +252,7 @@
+   debugImplementation(libs.androidx.ui.tooling)
+   debugImplementation(libs.leakcanary.android)
+   testImplementation("junit:junit:4.13.2")
++  implementation("com.google.code.gson:gson:2.15.0")
+   implementation(libs.bundles.compose.navigation3)
+   implementation(libs.androidx.appcompat)
+   implementation(libs.androidx.core.ktx)
+diff --git a/app/src/main/assets/licenses/Gson-Apache-2.0.txt b/app/src/main/assets/licenses/Gson-Apache-2.0.txt
+new file mode 100644
+--- /dev/null
++++ b/app/src/main/assets/licenses/Gson-Apache-2.0.txt
+@@ -0,0 +1,202 @@
++
++                                 Apache License
++                           Version 2.0, January 2004
++                        http://www.apache.org/licenses/
++
++   TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
++
++   1. Definitions.
++
++      "License" shall mean the terms and conditions for use, reproduction,
++      and distribution as defined by Sections 1 through 9 of this document.
++
++      "Licensor" shall mean the copyright owner or entity authorized by
++      the copyright owner that is granting the License.
++
++      "Legal Entity" shall mean the union of the acting entity and all
++      other entities that control, are controlled by, or are under common
++      control with that entity. For the purposes of this definition,
++      "control" means (i) the power, direct or indirect, to cause the
++      direction or management of such entity, whether by contract or
++      otherwise, or (ii) ownership of fifty percent (50%) or more of the
++      outstanding shares, or (iii) beneficial ownership of such entity.
++
++      "You" (or "Your") shall mean an individual or Legal Entity
++      exercising permissions granted by this License.
++
++      "Source" form shall mean the preferred form for making modifications,
++      including but not limited to software source code, documentation
++      source, and configuration files.
++
++      "Object" form shall mean any form resulting from mechanical
++      transformation or translation of a Source form, including but
++      not limited to compiled object code, generated documentation,
++      and conversions to other media types.
++
++      "Work" shall mean the work of authorship, whether in Source or
++      Object form, made available under the License, as indicated by a
++      copyright notice that is included in or attached to the work
++      (an example is provided in the Appendix below).
++
++      "Derivative Works" shall mean any work, whether in Source or Object
++      form, that is based on (or derived from) the Work and for which the
++      editorial revisions, annotations, elaborations, or other modifications
++      represent, as a whole, an original work of authorship. For the purposes
++      of this License, Derivative Works shall not include works that remain
++      separable from, or merely link (or bind by name) to the interfaces of,
++      the Work and Derivative Works thereof.
++
++      "Contribution" shall mean any work of authorship, including
++      the original version of the Work and any modifications or additions
++      to that Work or Derivative Works thereof, that is intentionally
++      submitted to Licensor for inclusion in the Work by the copyright owner
++      or by an individual or Legal Entity authorized to submit on behalf of
++      the copyright owner. For the purposes of this definition, "submitted"
++      means any form of electronic, verbal, or written communication sent
++      to the Licensor or its representatives, including but not limited to
++      communication on electronic mailing lists, source code control systems,
++      and issue tracking systems that are managed by, or on behalf of, the
++      Licensor for the purpose of discussing and improving the Work, but
++      excluding communication that is conspicuously marked or otherwise
++      designated in writing by the copyright owner as "Not a Contribution."
++
++      "Contributor" shall mean Licensor and any individual or Legal Entity
++      on behalf of whom a Contribution has been received by Licensor and
++      subsequently incorporated within the Work.
++
++   2. Grant of Copyright License. Subject to the terms and conditions of
++      this License, each Contributor hereby grants to You a perpetual,
++      worldwide, non-exclusive, no-charge, royalty-free, irrevocable
++      copyright license to reproduce, prepare Derivative Works of,
++      publicly display, publicly perform, sublicense, and distribute the
++      Work and such Derivative Works in Source or Object form.
++
++   3. Grant of Patent License. Subject to the terms and conditions of
++      this License, each Contributor hereby grants to You a perpetual,
++      worldwide, non-exclusive, no-charge, royalty-free, irrevocable
++      (except as stated in this section) patent license to make, have made,
++      use, offer to sell, sell, import, and otherwise transfer the Work,
++      where such license applies only to those patent claims licensable
++      by such Contributor that are necessarily infringed by their
++      Contribution(s) alone or by combination of their Contribution(s)
++      with the Work to which such Contribution(s) was submitted. If You
++      institute patent litigation against any entity (including a
++      cross-claim or counterclaim in a lawsuit) alleging that the Work
++      or a Contribution incorporated within the Work constitutes direct
++      or contributory patent infringement, then any patent licenses
++      granted to You under this License for that Work shall terminate
++      as of the date such litigation is filed.
++
++   4. Redistribution. You may reproduce and distribute copies of the
++      Work or Derivative Works thereof in any medium, with or without
++      modifications, and in Source or Object form, provided that You
++      meet the following conditions:
++
++      (a) You must give any other recipients of the Work or
++          Derivative Works a copy of this License; and
++
++      (b) You must cause any modified files to carry prominent notices
++          stating that You changed the files; and
++
++      (c) You must retain, in the Source form of any Derivative Works
++          that You distribute, all copyright, patent, trademark, and
++          attribution notices from the Source form of the Work,
++          excluding those notices that do not pertain to any part of
++          the Derivative Works; and
++
++      (d) If the Work includes a "NOTICE" text file as part of its
++          distribution, then any Derivative Works that You distribute must
++          include a readable copy of the attribution notices contained
++          within such NOTICE file, excluding those notices that do not
++          pertain to any part of the Derivative Works, in at least one
++          of the following places: within a NOTICE text file distributed
++          as part of the Derivative Works; within the Source form or
++          documentation, if provided along with the Derivative Works; or,
++          within a display generated by the Derivative Works, if and
++          wherever such third-party notices normally appear. The contents
++          of the NOTICE file are for informational purposes only and
++          do not modify the License. You may add Your own attribution
++          notices within Derivative Works that You distribute, alongside
++          or as an addendum to the NOTICE text from the Work, provided
++          that such additional attribution notices cannot be construed
++          as modifying the License.
++
++      You may add Your own copyright statement to Your modifications and
++      may provide additional or different license terms and conditions
++      for use, reproduction, or distribution of Your modifications, or
++      for any such Derivative Works as a whole, provided Your use,
++      reproduction, and distribution of the Work otherwise complies with
++      the conditions stated in this License.
++
++   5. Submission of Contributions. Unless You explicitly state otherwise,
++      any Contribution intentionally submitted for inclusion in the Work
++      by You to the Licensor shall be under the terms and conditions of
++      this License, without any additional terms or conditions.
++      Notwithstanding the above, nothing herein shall supersede or modify
++      the terms of any separate license agreement you may have executed
++      with Licensor regarding such Contributions.
++
++   6. Trademarks. This License does not grant permission to use the trade
++      names, trademarks, service marks, or product names of the Licensor,
++      except as required for reasonable and customary use in describing the
++      origin of the Work and reproducing the content of the NOTICE file.
++
++   7. Disclaimer of Warranty. Unless required by applicable law or
++      agreed to in writing, Licensor provides the Work (and each
++      Contributor provides its Contributions) on an "AS IS" BASIS,
++      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
++      implied, including, without limitation, any warranties or conditions
++      of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A
++      PARTICULAR PURPOSE. You are solely responsible for determining the
++      appropriateness of using or redistributing the Work and assume any
++      risks associated with Your exercise of permissions under this License.
++
++   8. Limitation of Liability. In no event and under no legal theory,
++      whether in tort (including negligence), contract, or otherwise,
++      unless required by applicable law (such as deliberate and grossly
++      negligent acts) or agreed to in writing, shall any Contributor be
++      liable to You for damages, including any direct, indirect, special,
++      incidental, or consequential damages of any character arising as a
++      result of this License or out of the use or inability to use the
++      Work (including but not limited to damages for loss of goodwill,
++      work stoppage, computer failure or malfunction, or any and all
++      other commercial damages or losses), even if such Contributor
++      has been advised of the possibility of such damages.
++
++   9. Accepting Warranty or Additional Liability. While redistributing
++      the Work or Derivative Works thereof, You may choose to offer,
++      and charge a fee for, acceptance of support, warranty, indemnity,
++      or other liability obligations and/or rights consistent with this
++      License. However, in accepting such obligations, You may act only
++      on Your own behalf and on Your sole responsibility, not on behalf
++      of any other Contributor, and only if You agree to indemnify,
++      defend, and hold each Contributor harmless for any liability
++      incurred by, or claims asserted against, such Contributor by reason
++      of your accepting any such warranty or additional liability.
++
++   END OF TERMS AND CONDITIONS
++
++   APPENDIX: How to apply the Apache License to your work.
++
++      To apply the Apache License to your work, attach the following
++      boilerplate notice, with the fields enclosed by brackets "[]"
++      replaced with your own identifying information. (Don't include
++      the brackets!)  The text should be enclosed in the appropriate
++      comment syntax for the file format. We also recommend that a
++      file or class name and description of purpose be included on the
++      same "printed page" as the copyright notice for easier
++      identification within third-party archives.
++
++   Copyright [yyyy] [name of copyright owner]
++
++   Licensed under the Apache License, Version 2.0 (the "License");
++   you may not use this file except in compliance with the License.
++   You may obtain a copy of the License at
++
++       http://www.apache.org/licenses/LICENSE-2.0
++
++   Unless required by applicable law or agreed to in writing, software
++   distributed under the License is distributed on an "AS IS" BASIS,
++   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++   See the License for the specific language governing permissions and
++   limitations under the License.
+diff --git a/app/src/main/java/app/infinity/mpvz/App.kt b/app/src/main/java/app/infinity/mpvz/App.kt
+--- a/app/src/main/java/app/infinity/mpvz/App.kt
++++ b/app/src/main/java/app/infinity/mpvz/App.kt
+@@ -63,6 +63,17 @@
+     private const val IDLE_MPV_CORE_GRACE_MS = 3L * 60L * 1000L
+   }
+ 
++  override fun onTrimMemory(level: Int) {
++    super.onTrimMemory(level)
++    app.infinity.mpvz.presentation.components.RemoteImageLoader.trimMemory()
++    app.infinity.mpvz.utils.AppMemoryDiagnostics.record("trim level=$level")
++  }
++
++  override fun onLowMemory() {
++    super.onLowMemory()
++    app.infinity.mpvz.presentation.components.RemoteImageLoader.trimMemory()
++  }
++
+   override fun onCreate() {
+     super.onCreate()
+ 
+diff --git a/app/src/main/java/app/infinity/mpvz/data/jellyfin/JellyfinClient.kt b/app/src/main/java/app/infinity/mpvz/data/jellyfin/JellyfinClient.kt
+--- a/app/src/main/java/app/infinity/mpvz/data/jellyfin/JellyfinClient.kt
++++ b/app/src/main/java/app/infinity/mpvz/data/jellyfin/JellyfinClient.kt
+@@ -350,6 +350,9 @@
+       Result.failure(lastError)
+     }
+ 
++  private suspend fun readMetadata(response: okhttp3.Response, includeSources: Boolean = false) =
++    JellyfinJsonResponse.read(response.body, includeSources)
++
+   suspend fun getUserLibraries(
+     serverUrl: String,
+     userId: String,
+@@ -371,8 +374,7 @@
+           if (!response.isSuccessful) {
+             throw IOException("Failed to load libraries: HTTP ${response.code}")
+           }
+-          val bodyStr = response.body.string()
+-          val root = json.parseToJsonElement(bodyStr).jsonObject
++          val root = readMetadata(response).jsonObject
+           val itemsArray = root["Items"]?.jsonArray ?: JsonArray(emptyList())
+           itemsArray.map { parseItem(it.jsonObject, includeMediaSources = false) }
+         }
+@@ -402,7 +404,7 @@
+           if (!response.isSuccessful) {
+             throw IOException("Failed to load genres: HTTP ${response.code}")
+           }
+-          val root = json.parseToJsonElement(response.body.string()).jsonObject
++          val root = readMetadata(response).jsonObject
+           val itemsArray = root["Items"]?.jsonArray ?: JsonArray(emptyList())
+           itemsArray.mapNotNull { it.jsonObject["Name"]?.jsonPrimitive?.content?.takeIf(String::isNotBlank) }
+         }
+@@ -433,8 +435,7 @@
+           if (!response.isSuccessful) {
+             throw IOException("Failed to load resume items: HTTP ${response.code}")
+           }
+-          val bodyStr = response.body.string()
+-          val root = json.parseToJsonElement(bodyStr).jsonObject
++          val root = readMetadata(response).jsonObject
+           val itemsArray = root["Items"]?.jsonArray ?: JsonArray(emptyList())
+           itemsArray.map { parseItem(it.jsonObject, includeMediaSources = false) }
+         }
+@@ -468,8 +469,7 @@
+           if (!response.isSuccessful) {
+             throw IOException("Failed to load latest media: HTTP ${response.code}")
+           }
+-          val bodyStr = response.body.string()
+-          val root = json.parseToJsonElement(bodyStr)
++          val root = readMetadata(response)
+           val itemsArray =
+             if (root is JsonArray) {
+               root
+@@ -504,8 +504,7 @@
+           if (!response.isSuccessful) {
+             throw IOException("Failed to load suggestions: HTTP ${response.code}")
+           }
+-          val bodyStr = response.body.string()
+-          val root = json.parseToJsonElement(bodyStr)
++          val root = readMetadata(response)
+           val itemsArray =
+             if (root is JsonArray) {
+               root
+@@ -541,8 +540,7 @@
+           if (!response.isSuccessful) {
+             throw IOException("Failed to load similar items: HTTP ${response.code}")
+           }
+-          val bodyStr = response.body.string()
+-          val root = json.parseToJsonElement(bodyStr).jsonObject
++          val root = readMetadata(response).jsonObject
+           val itemsArray = root["Items"]?.jsonArray ?: JsonArray(emptyList())
+           itemsArray.map { parseItem(it.jsonObject, includeMediaSources = false) }
+         }
+@@ -574,8 +572,7 @@
+           if (!response.isSuccessful) {
+             throw IOException("Failed to load item: HTTP ${response.code}")
+           }
+-          val bodyStr = response.body.string()
+-          val jsonObj = json.parseToJsonElement(bodyStr).jsonObject
++          val jsonObj = readMetadata(response, includeSources = includeMediaSources).jsonObject
+           parseItem(jsonObj, includeMediaSources).also { item ->
+             if (item.isVideo) sourceCache.remember(sourceKey(serverUrl, userId, itemId, token), item.mediaSources, keepRicherStreams = true)
+           }
+@@ -660,8 +657,7 @@
+           if (!response.isSuccessful) {
+             throw IOException("Failed to load items: HTTP ${response.code}")
+           }
+-          val bodyStr = response.body.string()
+-          val root = json.parseToJsonElement(bodyStr).jsonObject
++          val root = readMetadata(response).jsonObject
+           val totalRecordCount = root["TotalRecordCount"]?.jsonPrimitive?.intOrNull ?: 0
+           val itemsArray = root["Items"]?.jsonArray ?: JsonArray(emptyList())
+           val items = itemsArray.map { parseItem(it.jsonObject, includeMediaSources = false) }
+@@ -704,8 +700,7 @@
+           if (!response.isSuccessful) {
+             throw IOException("Failed to load person: HTTP ${response.code}")
+           }
+-          val bodyStr = response.body.string()
+-          val root = json.parseToJsonElement(bodyStr).jsonObject
++          val root = readMetadata(response).jsonObject
+           parseItem(root, includeMediaSources = false)
+         }
+       }
+@@ -745,8 +740,7 @@
+           if (!response.isSuccessful) {
+             throw IOException("Failed to load person media: HTTP ${response.code}")
+           }
+-          val bodyStr = response.body.string()
+-          val root = json.parseToJsonElement(bodyStr).jsonObject
++          val root = readMetadata(response).jsonObject
+           val itemsArray = root["Items"]?.jsonArray ?: JsonArray(emptyList())
+           itemsArray.map { parseItem(it.jsonObject, includeMediaSources = false) }
+         }
+@@ -788,8 +782,7 @@
+           if (!response.isSuccessful) {
+             throw IOException("Failed to load artists: HTTP ${response.code}")
+           }
+-          val bodyStr = response.body.string()
+-          val root = json.parseToJsonElement(bodyStr).jsonObject
++          val root = readMetadata(response).jsonObject
+           val totalRecordCount = root["TotalRecordCount"]?.jsonPrimitive?.intOrNull ?: 0
+           val itemsArray = root["Items"]?.jsonArray ?: JsonArray(emptyList())
+           val items = itemsArray.map { parseItem(it.jsonObject, includeMediaSources = false) }
+@@ -825,8 +818,7 @@
+           if (!response.isSuccessful) {
+             throw IOException("Failed to load seasons: HTTP ${response.code}")
+           }
+-          val bodyStr = response.body.string()
+-          val root = json.parseToJsonElement(bodyStr).jsonObject
++          val root = readMetadata(response).jsonObject
+           val itemsArray = root["Items"]?.jsonArray ?: JsonArray(emptyList())
+           itemsArray.map { parseItem(it.jsonObject, includeMediaSources = false) }
+         }
+@@ -868,8 +860,7 @@
+           if (!response.isSuccessful) {
+             throw IOException("Failed to load episodes: HTTP ${response.code}")
+           }
+-          val bodyStr = response.body.string()
+-          val root = json.parseToJsonElement(bodyStr).jsonObject
++          val root = readMetadata(response).jsonObject
+           val itemsArray = root["Items"]?.jsonArray ?: JsonArray(emptyList())
+           itemsArray.map { parseItem(it.jsonObject, includeMediaSources = false) }
+         }
+@@ -903,7 +894,7 @@
+         val request = Request.Builder().url(endpoint).addServerHeaders(token).get().build()
+         sourceHttpClient.newCall(request).awaitResponse().use { response ->
+           if (!response.isSuccessful) throw sourceFailure(response)
+-          val sources = JellyfinMediaSourceParser.parse(json.parseToJsonElement(response.body.string()).jsonObject, itemId)
++          val sources = JellyfinMediaSourceParser.parse(readMetadata(response, includeSources = true).jsonObject, itemId)
+           currentCoroutineContext().ensureActive()
+           Result.success(sourceCache.remember(key, sources, keepRicherStreams = true))
+         }
+@@ -939,13 +930,13 @@
+           null
+         } else {
+           if (!response.isSuccessful) throw sourceFailure(response)
+-          playbackSources(response.body.string(), itemId)
++          playbackSources(response, itemId)
+             .takeIf { it.isNotEmpty() }
+         }
+       } ?: sourceHttpClient.newCall(Request.Builder().url(endpoint).addServerHeaders(token).get().build())
+         .awaitResponse().use { response ->
+           if (!response.isSuccessful) throw sourceFailure(response)
+-          playbackSources(response.body.string(), itemId)
++          playbackSources(response, itemId)
+         }
+       if (sources.isEmpty()) throw JellyfinSourceRequestException()
+       sourceCache.remember(sourceKey(serverUrl, userId, itemId, token), sources)
+@@ -964,8 +955,8 @@
+     },
+   )
+ 
+-  private fun playbackSources(body: String, itemId: String): List<JellyfinMediaSource> {
+-    val root = json.parseToJsonElement(body).jsonObject
++  private suspend fun playbackSources(response: okhttp3.Response, itemId: String): List<JellyfinMediaSource> {
++    val root = readMetadata(response, includeSources = true).jsonObject
+     val error = (root["ErrorCode"] as? kotlinx.serialization.json.JsonPrimitive)?.contentOrNull?.takeIf { it.isNotBlank() }
+     if (error != null) throw JellyfinSourceRequestException(serverCode = error)
+     return JellyfinMediaSourceParser.parse(root, itemId)
+@@ -1014,8 +1005,7 @@
+           if (!response.isSuccessful) {
+             throw IOException("Unable to load subtitles: HTTP ${response.code}")
+           }
+-          val bodyStr = response.body.string()
+-          val root = json.parseToJsonElement(bodyStr).jsonObject
++          val root = readMetadata(response, includeSources = true).jsonObject
+           JellyfinMediaSourceParser.parse(root, itemId).firstOrNull()
+             ?: JellyfinMediaSource(itemId, "Original", streams = JellyfinMediaSourceParser.parseStreams(root["MediaStreams"] as? JsonArray))
+         }
+@@ -1419,8 +1409,7 @@
+           if (!response.isSuccessful) {
+             return@withContext Result.failure(IOException("Create playlist failed: ${response.code} ${response.message}"))
+           }
+-          val bodyStr = response.body.string()
+-          val root = json.parseToJsonElement(bodyStr).jsonObject
++          val root = readMetadata(response).jsonObject
+           val id = root["Id"]?.jsonPrimitive?.content ?: ""
+           Result.success(id)
+         }
+diff --git a/app/src/main/java/app/infinity/mpvz/data/jellyfin/JellyfinJsonResponse.kt b/app/src/main/java/app/infinity/mpvz/data/jellyfin/JellyfinJsonResponse.kt
+new file mode 100644
+--- /dev/null
++++ b/app/src/main/java/app/infinity/mpvz/data/jellyfin/JellyfinJsonResponse.kt
+@@ -0,0 +1,114 @@
++/* SPDX-License-Identifier: AGPL-3.0-or-later */
++package app.infinity.mpvz.data.jellyfin
++
++import app.infinity.mpvz.network.BoundedInputStream
++import app.infinity.mpvz.network.ResponseLimitException
++import com.google.gson.Strictness
++import com.google.gson.stream.JsonReader
++import com.google.gson.stream.JsonToken
++import kotlinx.coroutines.sync.Semaphore
++import kotlinx.coroutines.sync.withPermit
++import kotlinx.coroutines.currentCoroutineContext
++import kotlinx.coroutines.ensureActive
++import kotlinx.serialization.ExperimentalSerializationApi
++import kotlinx.serialization.json.*
++import okhttp3.ResponseBody
++import java.io.InputStream
++import java.io.InputStreamReader
++
++/** Projects only used metadata while streaming; unknown/source fields are skipped before allocation. */
++internal object JellyfinJsonResponse {
++  private val parsing = Semaphore(1)
++  private val fields = setOf(
++    "Items", "TotalRecordCount", "ErrorCode", "Id", "Name", "Type", "CollectionType", "Overview",
++    "RunTimeTicks", "CumulativeRunTimeTicks", "IsFolder", "ProductionYear", "CommunityRating", "CriticRating",
++    "OfficialRating", "SeriesName", "SeriesId", "SeriesPrimaryImageTag", "SeasonName", "IndexNumber",
++    "ParentIndexNumber", "ChildCount", "Container", "PremiereDate", "Status", "Genres", "Taglines",
++    "AlbumArtist", "AlbumArtists", "ArtistItems", "Artists", "ImageTags", "Primary", "Logo",
++    "ParentLogoImageTag", "SeriesLogoImageTag", "ParentLogoItemId", "ParentId", "BackdropImageTags",
++    "AlbumId", "AlbumPrimaryImageTag", "ParentPrimaryImageTag", "UserData", "PlaybackPositionTicks",
++    "Played", "IsFavorite", "LastPlayedDate", "MediaSources", "MediaStreams", "Codec", "Width", "Height",
++    "VideoRange", "VideoRangeType", "Channels", "RemoteTrailers", "RemoteTrailerUrl", "Url", "People",
++    "Role", "PrimaryImageTag", "CanDelete", "Path", "Size", "Bitrate", "Index", "Language", "DisplayTitle",
++    "IsExternal", "DeliveryUrl",
++  )
++
++  suspend fun read(body: ResponseBody, includeSources: Boolean = false): JsonElement = parsing.withPermit {
++    try {
++      val context = currentCoroutineContext()
++      read(body.byteStream(), includeSources, checkActive = { context.ensureActive() }).also {
++        val root = it as? JsonObject
++        val sourceCount = (root?.get("MediaSources") as? JsonArray)?.size ?: 0
++        val itemCount = (root?.get("Items") as? JsonArray)?.size ?: (it as? JsonArray)?.size ?: 0
++        app.infinity.mpvz.utils.AppMemoryDiagnostics.record("metadata items=$itemCount links=$sourceCount sources=$includeSources")
++      }
++    } catch (large: ResponseLimitException) {
++      app.infinity.mpvz.utils.AppMemoryDiagnostics.record("metadata rejected: size budget")
++      throw large
++    }
++  }
++
++  fun read(
++    input: InputStream,
++    includeSources: Boolean = false,
++    maxInputBytes: Long = 32L * 1024 * 1024,
++    maxRetainedBytes: Long = 8L * 1024 * 1024,
++    checkActive: () -> Unit = {},
++  ): JsonElement {
++    val bounded = BoundedInputStream(input, maxInputBytes, checkActive)
++    val budget = Budget(maxRetainedBytes)
++    JsonReader(InputStreamReader(bounded, Charsets.UTF_8)).use { reader ->
++      reader.strictness = Strictness.STRICT
++      val root = value(reader, includeSources, budget, 0)
++      check(reader.peek() == JsonToken.END_DOCUMENT) { "Unexpected trailing JSON" }
++      return root
++    }
++  }
++
++  private class Budget(private val maxBytes: Long) {
++    private var used = 0L
++    fun add(bytes: Long) { used += bytes; if (used > maxBytes) throw ResponseLimitException() }
++  }
++
++  @OptIn(ExperimentalSerializationApi::class)
++  private fun value(reader: JsonReader, includeSources: Boolean, budget: Budget, depth: Int): JsonElement {
++    if (depth > 64) throw ResponseLimitException()
++    budget.add(128)
++    return when (reader.peek()) {
++      JsonToken.BEGIN_OBJECT -> {
++        reader.beginObject()
++        val values = linkedMapOf<String, JsonElement>()
++        while (reader.hasNext()) {
++          val name = reader.nextName()
++          if (name !in fields || (!includeSources && name == "MediaSources")) reader.skipValue()
++          else {
++            budget.add(64L + name.length * 2L)
++            values[name] = value(reader, includeSources, budget, depth + 1)
++          }
++        }
++        reader.endObject()
++        JsonObject(values)
++      }
++      JsonToken.BEGIN_ARRAY -> {
++        reader.beginArray()
++        val values = ArrayList<JsonElement>()
++        while (reader.hasNext()) values.add(value(reader, includeSources, budget, depth + 1))
++        reader.endArray()
++        JsonArray(values)
++      }
++      JsonToken.STRING -> {
++        val text = reader.nextString()
++        budget.add(32L + text.length * 2L)
++        JsonPrimitive(text)
++      }
++      JsonToken.NUMBER -> {
++        val text = reader.nextString()
++        budget.add(32L + text.length * 2L)
++        JsonUnquotedLiteral(text)
++      }
++      JsonToken.BOOLEAN -> JsonPrimitive(reader.nextBoolean())
++      JsonToken.NULL -> { reader.nextNull(); JsonNull }
++      else -> error("Invalid JSON value")
++    }
++  }
++}
+diff --git a/app/src/main/java/app/infinity/mpvz/data/jellyfin/JellyfinSourceLoader.kt b/app/src/main/java/app/infinity/mpvz/data/jellyfin/JellyfinSourceLoader.kt
+--- a/app/src/main/java/app/infinity/mpvz/data/jellyfin/JellyfinSourceLoader.kt
++++ b/app/src/main/java/app/infinity/mpvz/data/jellyfin/JellyfinSourceLoader.kt
+@@ -91,6 +91,7 @@
+           val error = result.exceptionOrNull()
+           val retryable = when (error) {
+             is CancellationException -> false
++            is app.infinity.mpvz.network.ResponseLimitException -> false
+             is JellyfinSourceRequestException -> error.canRetry
+             is IOException -> true
+             else -> false
+diff --git a/app/src/main/java/app/infinity/mpvz/domain/jellyfin/JellyfinSourceErrors.kt b/app/src/main/java/app/infinity/mpvz/domain/jellyfin/JellyfinSourceErrors.kt
+--- a/app/src/main/java/app/infinity/mpvz/domain/jellyfin/JellyfinSourceErrors.kt
++++ b/app/src/main/java/app/infinity/mpvz/domain/jellyfin/JellyfinSourceErrors.kt
+@@ -4,6 +4,9 @@
+ /** Distinguish an empty source list from a failed request without showing URLs or credentials. */
+ internal object JellyfinSourceErrors {
+   fun emptySelectionMessage(error: Throwable?): String {
++    if (error is app.infinity.mpvz.network.ResponseLimitException) {
++      return "The server sent too much metadata. Try another title or check the server response."
++    }
+     when ((error as? app.infinity.mpvz.data.jellyfin.JellyfinSourceRequestException)?.serverCode) {
+       "RateLimitExceeded" -> return "The server's playback limit was reached. Stop another playback and retry."
+       "NotAllowed", "AccessDenied" -> return "The server did not allow playback of this item. Check this account's permissions."
+diff --git a/app/src/main/java/app/infinity/mpvz/domain/jellyfin/JellyfinSourceFilter.kt b/app/src/main/java/app/infinity/mpvz/domain/jellyfin/JellyfinSourceFilter.kt
+--- a/app/src/main/java/app/infinity/mpvz/domain/jellyfin/JellyfinSourceFilter.kt
++++ b/app/src/main/java/app/infinity/mpvz/domain/jellyfin/JellyfinSourceFilter.kt
+@@ -89,14 +89,17 @@
+     return entries.mapNotNull { entry ->
+       if (language != null && language !in entry.languages) return@mapNotNull null
+       if (terms.isEmpty()) return@mapNotNull entry.source
+-      // Description is generated by the source model, so build it at most once
+-      // for this search and release it instead of retaining it in every entry.
+-      val description by lazy(LazyThreadSafetyMode.NONE) { entry.source.description }
++      val numericDescription by lazy(LazyThreadSafetyMode.NONE) {
++        entry.source.copy(streams = emptyList(), container = null).description
++      }
+       val matches = terms.all { term ->
+         entry.source.name.contains(term, ignoreCase = true) ||
+           entry.languages.any { label ->
+             label.contains(term, ignoreCase = true) || searchAliases[label].orEmpty().any { it.contains(term, ignoreCase = true) }
+-          } || description.contains(term, ignoreCase = true)
++          } || entry.source.container?.contains(term, ignoreCase = true) == true ||
++          entry.source.streams.any { stream ->
++            (stream.displayTitle ?: stream.language ?: stream.codec)?.contains(term, ignoreCase = true) == true
++          } || numericDescription.contains(term, ignoreCase = true)
+       }
+       entry.source.takeIf { matches }
+     }
+diff --git a/app/src/main/java/app/infinity/mpvz/domain/jellyfin/JellyfinSourceText.kt b/app/src/main/java/app/infinity/mpvz/domain/jellyfin/JellyfinSourceText.kt
+new file mode 100644
+--- /dev/null
++++ b/app/src/main/java/app/infinity/mpvz/domain/jellyfin/JellyfinSourceText.kt
+@@ -0,0 +1,29 @@
++/* SPDX-License-Identifier: AGPL-3.0-or-later */
++package app.infinity.mpvz.domain.jellyfin
++
++/** Bound text passed to Compose without changing source IDs, URLs or search metadata. */
++internal object JellyfinSourceText {
++  fun name(source: JellyfinMediaSource): String = source.name.take(1024)
++
++  fun description(source: JellyfinMediaSource, limit: Int = 1536): String {
++    require(limit > 0)
++    val result = StringBuilder()
++    fun append(text: String?, separator: String) {
++      if (text.isNullOrBlank() || result.length >= limit) return
++      if (result.isNotEmpty()) result.append(separator.take(limit - result.length))
++      val remaining = limit - result.length
++      result.append(text, 0, minOf(text.length, remaining))
++    }
++    source.streams.firstOrNull { it.type.equals("Video", true) }?.displayTitle?.let { append(it, " • ") }
++    val seen = HashSet<String>()
++    for (stream in source.streams) {
++      if (result.length >= limit) break
++      if (!stream.type.equals("Audio", true)) continue
++      val label = stream.displayTitle ?: stream.language ?: stream.codec ?: continue
++      if (seen.add(label)) append(label, " / ")
++    }
++    // Only numeric/container metadata, so formatting cannot join a large track list.
++    append(source.copy(streams = emptyList(), container = source.container?.take(64)).description, " • ")
++    return result.toString()
++  }
++}
+diff --git a/app/src/main/java/app/infinity/mpvz/network/BoundedInputStream.kt b/app/src/main/java/app/infinity/mpvz/network/BoundedInputStream.kt
+new file mode 100644
+--- /dev/null
++++ b/app/src/main/java/app/infinity/mpvz/network/BoundedInputStream.kt
+@@ -0,0 +1,52 @@
++/* SPDX-License-Identifier: AGPL-3.0-or-later */
++package app.infinity.mpvz.network
++
++import java.io.FilterInputStream
++import java.io.IOException
++import java.io.InputStream
++
++internal class ResponseLimitException : IOException("The server response is too large to process safely")
++
++/** Counts decompressed bytes too, including unknown-length/chunked responses. */
++internal class BoundedInputStream(
++  input: InputStream,
++  private val limit: Long,
++  private val checkActive: () -> Unit = {},
++) : FilterInputStream(input) {
++  var bytesRead: Long = 0
++    private set
++
++  init { require(limit >= 0) }
++
++  override fun read(): Int {
++    checkActive()
++    val value = `in`.read()
++    if (value >= 0 && ++bytesRead > limit) throw ResponseLimitException()
++    return value
++  }
++
++  override fun read(buffer: ByteArray, offset: Int, length: Int): Int {
++    if (length == 0) return 0
++    checkActive()
++    val count = `in`.read(buffer, offset, minOf(length.toLong(), limit - bytesRead + 1).coerceAtLeast(1).toInt())
++    if (count > 0) {
++      bytesRead += count
++      if (bytesRead > limit) throw ResponseLimitException()
++    }
++    return count
++  }
++
++  override fun skip(count: Long): Long {
++    val buffer = ByteArray(minOf(count.coerceAtLeast(0), 8_192).toInt())
++    var skipped = 0L
++    while (skipped < count) {
++      val read = read(buffer, 0, minOf(buffer.size.toLong(), count - skipped).toInt())
++      if (read < 0) break
++      skipped += read
++    }
++    return skipped
++  }
++
++  override fun markSupported() = false
++  override fun reset(): Unit = throw IOException("Reset is not supported")
++}
+diff --git a/app/src/main/java/app/infinity/mpvz/presentation/components/RemoteImage.kt b/app/src/main/java/app/infinity/mpvz/presentation/components/RemoteImage.kt
+--- a/app/src/main/java/app/infinity/mpvz/presentation/components/RemoteImage.kt
++++ b/app/src/main/java/app/infinity/mpvz/presentation/components/RemoteImage.kt
+@@ -30,12 +30,10 @@
+ import androidx.compose.ui.platform.LocalContext
+ import app.infinity.mpvz.domain.thumbnail.EmbeddedArtworkResolver
+ import app.infinity.mpvz.network.awaitResponse
+-import kotlinx.coroutines.CoroutineScope
+-import kotlinx.coroutines.CoroutineStart
+-import kotlinx.coroutines.Deferred
+-import kotlinx.coroutines.Dispatchers
+-import kotlinx.coroutines.SupervisorJob
+-import kotlinx.coroutines.async
++import app.infinity.mpvz.network.BoundedInputStream
++import kotlinx.coroutines.CancellationException
++import kotlinx.coroutines.currentCoroutineContext
++import kotlinx.coroutines.ensureActive
+ import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
+ import okhttp3.OkHttpClient
+ import okhttp3.Request
+@@ -117,171 +115,126 @@
+ }
+ 
+ internal object RemoteImageLoader {
+-  // Search/catalog cards can be rendered at >1,024 px on dense phones and tablets.
+-  // Keep enough source detail for those cards while still bounding memory use.
+-  private const val MAX_IMAGE_DIMENSION = 2048
+   private const val CACHE_DIRECTORY = "remote_images"
+   private const val FAILURE_RETRY_MS = 30_000L
+-  private val loaderScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+-  private val inFlight = ConcurrentHashMap<String, Deferred<Bitmap?>>()
++  private const val MAX_ENCODED_BYTES = 16L * 1024 * 1024
++  private val requests = SharedImageRequests<Bitmap?>()
+   private val failedAt = ConcurrentHashMap<String, Long>()
+-  private val memoryCache =
+-    object : LruCache<String, Bitmap>(
+-      ((Runtime.getRuntime().maxMemory() / 1024L) / 32L).toInt(),
+-    ) {
+-      override fun sizeOf(
+-        key: String,
+-        value: Bitmap,
+-      ): Int = value.byteCount / 1024
+-    }
+-
+-  fun getFromMemory(url: String): Bitmap? = synchronized(memoryCache) { memoryCache.get(url) }
+-
+-  fun putInMemory(url: String, bitmap: Bitmap) {
+-    synchronized(memoryCache) { memoryCache.put(url, bitmap) }
++  private val memoryCache = object : LruCache<String, Bitmap>(
++    minOf(Runtime.getRuntime().maxMemory() / 1024L / 32L, 24L * 1024).toInt(),
++  ) {
++    override fun sizeOf(key: String, value: Bitmap) =
++      ((value.byteCount.toLong() + 1023) / 1024).coerceAtLeast(1).toInt()
++  }
++
++  private fun key(url: String, size: RemoteImageSize) = "${size.name}:$url"
++  fun getFromMemory(url: String): Bitmap? = getFromMemory(url, RemoteImageSize.CARD)
++  fun getFromMemory(url: String, size: RemoteImageSize): Bitmap? =
++    synchronized(memoryCache) { memoryCache.get(key(url, size)) }
++
++  fun putInMemory(url: String, bitmap: Bitmap) { cache(url, bitmap, RemoteImageSize.CARD) }
++
++  fun trimMemory() {
++    synchronized(memoryCache) { memoryCache.evictAll() }
++    failedAt.clear()
++  }
++
++  private fun cache(url: String, bitmap: Bitmap, size: RemoteImageSize): Bitmap {
++    val sample = RemoteImagePolicy.sampleSize(bitmap.width, bitmap.height, size)
++    val bounded = if (sample == 1) bitmap else Bitmap.createScaledBitmap(
++      bitmap, maxOf(1, bitmap.width / sample), maxOf(1, bitmap.height / sample), true,
++    )
++    synchronized(memoryCache) { memoryCache.put(key(url, size), bounded) }
++    app.infinity.mpvz.utils.AppMemoryDiagnostics.record("artwork ${size.name} ${bounded.width}x${bounded.height} bytes=${bounded.byteCount}")
++    return bounded
+   }
+ 
+   suspend fun load(
+     context: Context,
+     client: OkHttpClient,
+     url: String,
++    size: RemoteImageSize = RemoteImageSize.CARD,
+   ): Bitmap? {
+     if (url.isBlank()) return null
+-    val applicationContext = context.applicationContext
+-    getFromMemory(url)?.let { return it }
+-    val failedAtMs = failedAt[url]
+-    if (failedAtMs != null) {
+-      if (SystemClock.elapsedRealtime() - failedAtMs < FAILURE_RETRY_MS) return null
+-      failedAt.remove(url, failedAtMs)
+-    }
+-
+-    val candidate =
+-      loaderScope.async(start = CoroutineStart.LAZY) {
+-        loadUncoalesced(applicationContext, client, url).also { result ->
+-          if (url.startsWith("http://", ignoreCase = true) || url.startsWith("https://", ignoreCase = true)) {
+-            if (result == null) failedAt[url] = SystemClock.elapsedRealtime() else failedAt.remove(url)
+-          }
++    getFromMemory(url, size)?.let { return it }
++    val now = SystemClock.elapsedRealtime()
++    failedAt.entries.removeAll { now - it.value >= FAILURE_RETRY_MS }
++    if (failedAt.size > 256) failedAt.entries.sortedBy { it.value }.take(failedAt.size - 256).forEach {
++      failedAt.remove(it.key, it.value)
++    }
++    if (failedAt[url]?.let { now - it < FAILURE_RETRY_MS } == true) return null
++    return requests.load(key(url, size)) {
++      loadUncoalesced(context.applicationContext, client, url, size).also { result ->
++        if (url.startsWith("http://", true) || url.startsWith("https://", true)) {
++          if (result == null) failedAt[url] = SystemClock.elapsedRealtime() else failedAt.remove(url)
+         }
+       }
+-    val operation =
+-      inFlight.putIfAbsent(url, candidate)?.also {
+-        candidate.cancel()
+-      } ?: candidate.also { owned ->
+-        owned.invokeOnCompletion { inFlight.remove(url, owned) }
+-        owned.start()
+-      }
+-    return operation.await()
+-  }
+-
+-  private suspend fun loadUncoalesced(
+-    context: Context,
+-    client: OkHttpClient,
+-    url: String,
+-  ): Bitmap? {
+-    getFromMemory(url)?.let { return it }
+-
+-    val parsedUri = runCatching { Uri.parse(url) }.getOrNull()
+-    val scheme = parsedUri?.scheme?.lowercase()
+-    val localBitmap =
+-      when (scheme) {
+-        "content", "android.resource" -> decodeSampled(context, parsedUri)
+-          ?: EmbeddedArtworkResolver.decodeArtworkUri(context, url)
+-        "file" -> parsedUri.path?.let(::File)?.let(::decodeSampled)
+-          ?: EmbeddedArtworkResolver.decodeArtworkUri(context, url)
+-        null, "" -> File(url).takeIf { it.isFile }?.let(::decodeSampled)
+-          ?: EmbeddedArtworkResolver.decodeArtworkUri(context, url)
+-        else -> null
+-      }
+-    if (localBitmap != null) {
+-      synchronized(memoryCache) { memoryCache.put(url, localBitmap) }
+-      return localBitmap
+-    }
+-
+-    if (scheme != "http" && scheme != "https") {
+-      return null
+-    }
+-
++    }
++  }
++
++  private suspend fun loadUncoalesced(context: Context, client: OkHttpClient, url: String, size: RemoteImageSize): Bitmap? {
++    getFromMemory(url, size)?.let { return it }
++    val uri = runCatching { Uri.parse(url) }.getOrNull()
++    val scheme = uri?.scheme?.lowercase()
++    val local = when (scheme) {
++      "content", "android.resource" -> decodeSampled(context, uri, size)
++        ?: EmbeddedArtworkResolver.decodeArtworkUri(context, url)
++      "file" -> uri.path?.let(::File)?.let { decodeSampled(it, size) }
++        ?: EmbeddedArtworkResolver.decodeArtworkUri(context, url)
++      null, "" -> File(url).takeIf { it.isFile }?.let { decodeSampled(it, size) }
++        ?: EmbeddedArtworkResolver.decodeArtworkUri(context, url)
++      else -> null
++    }
++    if (local != null) return cache(url, local, size)
++    if (scheme != "http" && scheme != "https") return null
+     val httpUrl = url.toHttpUrlOrNull() ?: return null
+-
+-    val cacheDirectory = File(context.cacheDir, CACHE_DIRECTORY).apply { mkdirs() }
+-    val cacheFile = File(cacheDirectory, hash(url))
+-    decodeSampled(cacheFile)?.let { bitmap ->
+-      synchronized(memoryCache) { memoryCache.put(url, bitmap) }
+-      return bitmap
+-    }
+-
+-    val host = httpUrl.host
+-    val request =
+-      runCatching {
+-        Request
+-          .Builder()
+-          .url(httpUrl)
+-          .header("User-Agent", "Mozilla/5.0 (Android) MpvInfinity")
+-          .apply { if (host.isNotBlank()) header("Referer", "https://$host") }
+-          .build()
+-      }.getOrNull() ?: return null
+-
+-    return runCatching {
++    val directory = File(context.cacheDir, CACHE_DIRECTORY).apply { mkdirs() }
++    val cached = File(directory, hash(url))
++    decodeSampled(cached, size)?.let { return cache(url, it, size) }
++    val request = Request.Builder().url(httpUrl)
++      .header("User-Agent", "Mozilla/5.0 (Android) MpvInfinity")
++      .header("Referer", "https://${httpUrl.host}").build()
++    return try {
+       client.newCall(request).awaitResponse().use { response ->
+         if (!response.isSuccessful) return@use null
+-        val bytes = response.body.bytes()
+-        FileOutputStream(cacheFile).use { it.write(bytes) }
+-        decodeSampled(cacheFile)?.also { bitmap ->
+-          synchronized(memoryCache) { memoryCache.put(url, bitmap) }
+-        }
++        val temporary = File.createTempFile("artwork-", ".tmp", directory)
++        try {
++          val context = currentCoroutineContext()
++          BoundedInputStream(response.body.byteStream(), MAX_ENCODED_BYTES) { context.ensureActive() }.use { input ->
++            FileOutputStream(temporary).use { input.copyTo(it) }
++          }
++          currentCoroutineContext().ensureActive()
++          if (!temporary.renameTo(cached)) return@use null
++          decodeSampled(cached, size)?.let { cache(url, it, size) }
++        } finally { temporary.delete() }
+       }
+-    }.getOrNull()
+-  }
+-
+-  private fun decodeSampled(
+-    context: Context,
+-    uri: Uri,
+-  ): Bitmap? =
+-    runCatching {
+-      val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+-      context.contentResolver.openInputStream(uri)?.use { input ->
+-        BitmapFactory.decodeStream(input, null, bounds)
+-      }
+-      if (bounds.outWidth <= 0 || bounds.outHeight <= 0) return@runCatching null
+-
+-      var sampleSize = 1
+-      while (maxOf(bounds.outWidth, bounds.outHeight) / (sampleSize * 2) >= MAX_IMAGE_DIMENSION) {
+-        sampleSize *= 2
+-      }
+-      context.contentResolver.openInputStream(uri)?.use { input ->
+-        BitmapFactory.decodeStream(
+-          input,
+-          null,
+-          BitmapFactory.Options().apply {
+-            inSampleSize = sampleSize
+-            inPreferredConfig = Bitmap.Config.ARGB_8888
+-          },
+-        )
+-      }
+-    }.getOrNull()
+-
+-  private fun decodeSampled(file: File): Bitmap? {
+-    if (!file.isFile || file.length() <= 0L) return null
++    } catch (cancelled: CancellationException) { throw cancelled }
++      catch (_: Exception) { null }
++  }
++
++  private fun options(width: Int, height: Int, size: RemoteImageSize) = BitmapFactory.Options().apply {
++    inSampleSize = RemoteImagePolicy.sampleSize(width, height, size)
++    inScaled = false
++    inPreferredConfig = Bitmap.Config.ARGB_8888
++  }
++
++  private fun decodeSampled(context: Context, uri: Uri, size: RemoteImageSize): Bitmap? = runCatching {
++    val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
++    context.contentResolver.openInputStream(uri)?.use { BitmapFactory.decodeStream(it, null, bounds) }
++    if (bounds.outWidth <= 0 || bounds.outHeight <= 0) return@runCatching null
++    context.contentResolver.openInputStream(uri)?.use {
++      BitmapFactory.decodeStream(it, null, options(bounds.outWidth, bounds.outHeight, size))
++    }
++  }.getOrNull()
++
++  private fun decodeSampled(file: File, size: RemoteImageSize): Bitmap? {
++    if (!file.isFile || file.length() <= 0) return null
+     val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+     BitmapFactory.decodeFile(file.absolutePath, bounds)
+     if (bounds.outWidth <= 0 || bounds.outHeight <= 0) return null
+-
+-    var sampleSize = 1
+-    while (maxOf(bounds.outWidth, bounds.outHeight) / (sampleSize * 2) >= MAX_IMAGE_DIMENSION) {
+-      sampleSize *= 2
+-    }
+-    return BitmapFactory.decodeFile(
+-      file.absolutePath,
+-      BitmapFactory.Options().apply {
+-        inSampleSize = sampleSize
+-        inPreferredConfig = Bitmap.Config.ARGB_8888
+-      },
+-    )
+-  }
+-
+-  private fun hash(value: String): String =
+-    MessageDigest
+-      .getInstance("SHA-256")
+-      .digest(value.toByteArray())
+-      .joinToString("") { byte -> "%02x".format(byte) }
++    return BitmapFactory.decodeFile(file.absolutePath, options(bounds.outWidth, bounds.outHeight, size))
++  }
++
++  private fun hash(value: String) = MessageDigest.getInstance("SHA-256")
++    .digest(value.toByteArray()).joinToString("") { "%02x".format(it) }
+ }
+diff --git a/app/src/main/java/app/infinity/mpvz/presentation/components/RemoteImagePolicy.kt b/app/src/main/java/app/infinity/mpvz/presentation/components/RemoteImagePolicy.kt
+new file mode 100644
+--- /dev/null
++++ b/app/src/main/java/app/infinity/mpvz/presentation/components/RemoteImagePolicy.kt
+@@ -0,0 +1,20 @@
++/* SPDX-License-Identifier: AGPL-3.0-or-later */
++package app.infinity.mpvz.presentation.components
++
++internal enum class RemoteImageSize(val maxDimension: Int, val maxPixels: Long) {
++  CARD(768, 512L * 768), HERO(1536, 1536L * 864),
++}
++
++internal object RemoteImagePolicy {
++  /** Ceil division matches decoders that round sampled dimensions up. */
++  fun sampleSize(width: Int, height: Int, size: RemoteImageSize): Int {
++    require(width > 0 && height > 0)
++    var sample = 1
++    while (true) {
++      val w = (width.toLong() + sample - 1) / sample
++      val h = (height.toLong() + sample - 1) / sample
++      if (w <= size.maxDimension && h <= size.maxDimension && w * h <= size.maxPixels) return sample
++      sample *= 2
++    }
++  }
++}
+diff --git a/app/src/main/java/app/infinity/mpvz/presentation/components/SharedImageRequests.kt b/app/src/main/java/app/infinity/mpvz/presentation/components/SharedImageRequests.kt
+new file mode 100644
+--- /dev/null
++++ b/app/src/main/java/app/infinity/mpvz/presentation/components/SharedImageRequests.kt
+@@ -0,0 +1,37 @@
++/* SPDX-License-Identifier: AGPL-3.0-or-later */
++package app.infinity.mpvz.presentation.components
++
++import kotlinx.coroutines.*
++import kotlinx.coroutines.sync.Semaphore
++import kotlinx.coroutines.sync.withPermit
++
++/** Coalesce active viewers, bound decoding, and cancel work when its last viewer leaves. */
++internal class SharedImageRequests<T>(parallelism: Int = 2) {
++  private class Entry<T>(val task: Deferred<T>, var readers: Int = 0)
++  private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
++  private val slots = Semaphore(parallelism)
++  private val entries = mutableMapOf<String, Entry<T>>()
++
++  suspend fun load(key: String, request: suspend () -> T): T {
++    val entry = synchronized(entries) {
++      entries.getOrPut(key) {
++        Entry(scope.async(start = CoroutineStart.LAZY) {
++          slots.withPermit {
++            currentCoroutineContext().ensureActive()
++            request().also { currentCoroutineContext().ensureActive() }
++          }
++        })
++      }.also { it.readers++ }
++    }
++    try { return entry.task.await() }
++    finally {
++      synchronized(entries) {
++        entry.readers--
++        if (entry.readers == 0) {
++          if (entries[key] === entry) entries.remove(key)
++          entry.task.cancel()
++        }
++      }
++    }
++  }
++}
+diff --git a/app/src/main/java/app/infinity/mpvz/ui/browser/jellyfin/JellyfinHeroArtwork.kt b/app/src/main/java/app/infinity/mpvz/ui/browser/jellyfin/JellyfinHeroArtwork.kt
+--- a/app/src/main/java/app/infinity/mpvz/ui/browser/jellyfin/JellyfinHeroArtwork.kt
++++ b/app/src/main/java/app/infinity/mpvz/ui/browser/jellyfin/JellyfinHeroArtwork.kt
+@@ -20,6 +20,7 @@
+ import app.infinity.mpvz.domain.jellyfin.JellyfinServer
+ import app.infinity.mpvz.network.SharedHttpClient
+ import app.infinity.mpvz.presentation.components.RemoteImageLoader
++import app.infinity.mpvz.presentation.components.RemoteImageSize
+ import kotlinx.coroutines.CompletableDeferred
+ import kotlinx.coroutines.cancelAndJoin
+ import kotlinx.coroutines.coroutineScope
+@@ -107,7 +108,7 @@
+   var finished by remember(artwork.backdrop, artwork.poster) { mutableStateOf(false) }
+   var bitmap by remember(artwork.backdrop, artwork.poster) {
+     mutableStateOf(
+-      artwork.backdrop?.let(RemoteImageLoader::getFromMemory)
++      artwork.backdrop?.let { RemoteImageLoader.getFromMemory(it, RemoteImageSize.HERO) }
+         ?: artwork.poster?.let(RemoteImageLoader::getFromMemory),
+     )
+   }
+@@ -115,7 +116,7 @@
+     loadJellyfinHeroArtwork(
+       backdrop = artwork.backdrop,
+       poster = artwork.poster,
+-      load = { RemoteImageLoader.load(context, heroImageClient, it) },
++      load = { RemoteImageLoader.load(context, heroImageClient, it, RemoteImageSize.HERO) },
+       publish = { bitmap = it },
+     )
+     // If neither URL works, the title remains usable and the carousel can recover.
+@@ -148,6 +149,6 @@
+ internal fun PrefetchJellyfinHeroBackdrop(url: String?) {
+   val context = LocalContext.current.applicationContext
+   LaunchedEffect(url) {
+-    if (url != null) RemoteImageLoader.load(context, heroImageClient, url)
++    if (url != null) RemoteImageLoader.load(context, heroImageClient, url, RemoteImageSize.HERO)
+   }
+ }
+diff --git a/app/src/main/java/app/infinity/mpvz/ui/browser/jellyfin/JellyfinSourceDialog.kt b/app/src/main/java/app/infinity/mpvz/ui/browser/jellyfin/JellyfinSourceDialog.kt
+--- a/app/src/main/java/app/infinity/mpvz/ui/browser/jellyfin/JellyfinSourceDialog.kt
++++ b/app/src/main/java/app/infinity/mpvz/ui/browser/jellyfin/JellyfinSourceDialog.kt
+@@ -39,6 +39,8 @@
+ import app.infinity.mpvz.domain.jellyfin.JellyfinLinkStatus
+ import androidx.compose.ui.unit.dp
+ import app.infinity.mpvz.domain.jellyfin.JellyfinSourceFilter
++import app.infinity.mpvz.domain.jellyfin.JellyfinSourceText
++import androidx.compose.ui.text.style.TextOverflow
+ import kotlinx.coroutines.Dispatchers
+ import kotlinx.coroutines.withContext
+ 
+@@ -120,7 +122,8 @@
+                   DropdownMenu(expanded = showCast && sourceMenu == source.id, onDismissRequest = { sourceMenu = null }) {
+                     DropdownMenuItem(text = { Text("Cast…") }, onClick = { sourceMenu = null; onCast(source.id) })
+                   }
+-                  Text("${index + 1}. ${source.name}", style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
++                  Text("${index + 1}. ${JellyfinSourceText.name(source)}", style = MaterialTheme.typography.titleSmall,
++                    maxLines = 3, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
+                   if (showCopy) {
+                     IconButton(onClick = { onCopy(source.id) }) {
+                       Icon(imageVector = Icons.RoundedFilled.ContentCopy, contentDescription = "Copy video link", modifier = Modifier.size(22.dp))
+@@ -163,7 +166,9 @@
+                   }
+                   Text(label, style = MaterialTheme.typography.bodySmall)
+                 }
+-                if (source.description.isNotBlank()) Text(source.description, style = MaterialTheme.typography.bodySmall)
++                val description = remember(source) { JellyfinSourceText.description(source) }
++                if (description.isNotBlank()) Text(description, maxLines = 4, overflow = TextOverflow.Ellipsis,
++                  style = MaterialTheme.typography.bodySmall)
+               }
+               HorizontalDivider()
+             }
+diff --git a/app/src/main/java/app/infinity/mpvz/utils/AppMemoryDiagnostics.kt b/app/src/main/java/app/infinity/mpvz/utils/AppMemoryDiagnostics.kt
+new file mode 100644
+--- /dev/null
++++ b/app/src/main/java/app/infinity/mpvz/utils/AppMemoryDiagnostics.kt
+@@ -0,0 +1,14 @@
++/* SPDX-License-Identifier: AGPL-3.0-or-later */
++package app.infinity.mpvz.utils
++
++import android.util.Log
++
++/** Only fixed stage names and numeric counters; never URLs, metadata, tokens or credentials. */
++internal object AppMemoryDiagnostics {
++  fun record(counters: String) {
++    val runtime = Runtime.getRuntime()
++    val used = (runtime.totalMemory() - runtime.freeMemory()) / (1024 * 1024)
++    try { Log.i("MkvMemory", "$counters heapMiB=$used/${runtime.maxMemory() / (1024 * 1024)}") }
++    catch (_: RuntimeException) { /* Android's Log stub is absent in local JVM tests. */ }
++  }
++}
+diff --git a/app/src/test/java/app/infinity/mpvz/data/jellyfin/JellyfinJsonResponseTest.kt b/app/src/test/java/app/infinity/mpvz/data/jellyfin/JellyfinJsonResponseTest.kt
+new file mode 100644
+--- /dev/null
++++ b/app/src/test/java/app/infinity/mpvz/data/jellyfin/JellyfinJsonResponseTest.kt
+@@ -0,0 +1,89 @@
++/* SPDX-License-Identifier: AGPL-3.0-or-later */
++package app.infinity.mpvz.data.jellyfin
++
++import app.infinity.mpvz.network.ResponseLimitException
++import java.io.ByteArrayInputStream
++import java.io.InputStream
++import java.io.SequenceInputStream
++import java.util.Collections
++import kotlinx.serialization.json.*
++import org.junit.Assert.*
++import org.junit.Test
++
++class JellyfinJsonResponseTest {
++  companion object {
++    /** A large fixture with constant memory, including during a 64 MiB stress run. */
++    fun largeIgnoredField(): InputStream {
++      val prefix = """{"Items":[{"Id":"movie","Name":"Movie","MediaSources":[{"Id":"link","Name":"Hindi 4K","Unused":"""".toByteArray()
++      val repeat = object : InputStream() {
++        var remaining = 24 * 1024 * 1024
++        override fun read(): Int = if (remaining-- > 0) 65 else -1
++        override fun read(b: ByteArray, off: Int, len: Int): Int {
++          if (remaining <= 0) return -1
++          val count = minOf(len, remaining)
++          java.util.Arrays.fill(b, off, off + count, 65.toByte())
++          remaining -= count
++          return count
++        }
++      }
++      val suffix = "\"}]}],\"TotalRecordCount\":1}".toByteArray()
++      return SequenceInputStream(Collections.enumeration(listOf(ByteArrayInputStream(prefix), repeat, ByteArrayInputStream(suffix))))
++    }
++  }
++
++  private fun read(text: String, sources: Boolean = false) =
++    JellyfinJsonResponse.read(text.byteInputStream(), sources)
++
++  @Test fun browseSkipsUnrequestedSourcesBeforeTheyBecomeJsonObjects() {
++    val root = JellyfinJsonResponse.read(largeIgnoredField()).jsonObject
++    val item = root["Items"]!!.jsonArray.single().jsonObject
++    assertEquals("movie", item["Id"]!!.jsonPrimitive.content)
++    assertFalse(item.containsKey("MediaSources"))
++  }
++  @Test fun sourceRequestsKeepAllVersionsButSkipLargeUnusedProviderFields() {
++    val root = JellyfinJsonResponse.read(largeIgnoredField(), true).jsonObject
++    val source = root["Items"]!!.jsonArray.single().jsonObject["MediaSources"]!!.jsonArray.single().jsonObject
++    assertEquals("Hindi 4K", source["Name"]!!.jsonPrimitive.content)
++    assertFalse(source.containsKey("Unused"))
++  }
++  @Test fun preservesExactNumbersUnicodeAndExternalSubtitleSelection() {
++    val root = read("""{"MediaSources":[{"Id":"source?x=1&y=2","Name":"हिंदी","Size":9223372036854775807,"MediaStreams":[{"Index":4,"Type":"Subtitle","IsExternal":true,"DeliveryUrl":"/Videos/a/Subtitles/4.srt"}]}]}""", true).jsonObject
++    val item = JellyfinMediaSourceParser.parse(root, "movie").single()
++    assertEquals("source?x=1&y=2", item.id)
++    assertEquals("हिंदी", item.name)
++    assertEquals(Long.MAX_VALUE, item.size)
++    assertTrue(item.streams.single().isExternal)
++    assertEquals("/Videos/a/Subtitles/4.srt", item.streams.single().deliveryUrl)
++  }
++  @Test fun normalLargeVersionListsAreNotSilentlyTruncated() {
++    val sources = (0..999).joinToString(",") { """{"Id":"$it","Name":"Hindi $it","Container":"mkv"}""" }
++    val root = read("""{"MediaSources":[$sources]}""", true).jsonObject
++    assertEquals(1_000, JellyfinMediaSourceParser.parse(root, "movie").size)
++  }
++  @Test fun retainedMetadataBudgetFailsExplicitly() {
++    try {
++      JellyfinJsonResponse.read("""{"Name":"${"a".repeat(2_000)}"}""".byteInputStream(), maxRetainedBytes = 1_024)
++      fail("Expected retained budget failure")
++    } catch (error: ResponseLimitException) {
++      assertFalse(error.message.orEmpty().contains("aaaa"))
++    }
++  }
++  @Test fun inputBudgetAlsoAppliesToSkippedUnknownFields() {
++    try {
++      JellyfinJsonResponse.read(largeIgnoredField(), maxInputBytes = 1_024)
++      fail("Expected streamed input budget failure")
++    } catch (_: ResponseLimitException) {}
++  }
++  @Test fun preservesPlaybackErrorsAndBrowseMetadata() {
++    val root = read("""{"ErrorCode":"NotAllowed","TotalRecordCount":2,"Items":[{"Id":"a","People":[{"Id":"p","Role":"Actor"}],"UserData":{"Played":true},"ImageTags":{"Primary":"image"},"Genres":["Action"]}]}""").jsonObject
++    assertEquals("NotAllowed", root["ErrorCode"]!!.jsonPrimitive.content)
++    assertTrue(root["Items"]!!.jsonArray.single().jsonObject["UserData"]!!.jsonObject["Played"]!!.jsonPrimitive.boolean)
++    assertEquals("image", root["Items"]!!.jsonArray.single().jsonObject["ImageTags"]!!.jsonObject["Primary"]!!.jsonPrimitive.content)
++  }
++  @Test fun excessiveNestingDoesNotOverflowTheStack() {
++    try {
++      read("{\"Items\":" + "[".repeat(100) + "null" + "]".repeat(100) + "}")
++      fail("Expected depth budget failure")
++    } catch (_: ResponseLimitException) {}
++  }
++}
+diff --git a/app/src/test/java/app/infinity/mpvz/data/jellyfin/JellyfinSourceLoaderTest.kt b/app/src/test/java/app/infinity/mpvz/data/jellyfin/JellyfinSourceLoaderTest.kt
+--- a/app/src/test/java/app/infinity/mpvz/data/jellyfin/JellyfinSourceLoaderTest.kt
++++ b/app/src/test/java/app/infinity/mpvz/data/jellyfin/JellyfinSourceLoaderTest.kt
+@@ -12,6 +12,23 @@
+ import java.io.IOException
+ 
+ class JellyfinSourceLoaderTest {
++  @Test fun oversizedResponsesFailWithoutAutomaticRefetchStorm() = runBlocking {
++    var metadataCalls = 0
++    var playbackCalls = 0
++    val error = app.infinity.mpvz.network.ResponseLimitException()
++    val result = JellyfinSourceLoader.load(emptyList(), {
++      metadataCalls++
++      Result.failure(error)
++    }, {
++      playbackCalls++
++      Result.failure(error)
++    }, retryDelaysMillis = listOf(0, 0)).toList()
++    assertEquals(1, metadataCalls)
++    assertEquals(1, playbackCalls)
++    assertSame(error, result.last().error)
++    assertFalse(result.last().isRefreshing)
++  }
++
+   private fun source(id: String) = JellyfinMediaSource(id, "Link $id")
+ 
+   @Test fun metadataHeadStartDoesNotAddADelayWhenMetadataIsReady() = runBlocking {
+diff --git a/app/src/test/java/app/infinity/mpvz/domain/jellyfin/JellyfinSourceTextTest.kt b/app/src/test/java/app/infinity/mpvz/domain/jellyfin/JellyfinSourceTextTest.kt
+new file mode 100644
+--- /dev/null
++++ b/app/src/test/java/app/infinity/mpvz/domain/jellyfin/JellyfinSourceTextTest.kt
+@@ -0,0 +1,24 @@
++/* SPDX-License-Identifier: AGPL-3.0-or-later */
++package app.infinity.mpvz.domain.jellyfin
++
++import org.junit.Assert.*
++import org.junit.Test
++
++class JellyfinSourceTextTest {
++  @Test fun longLabelsAndTrackListsAreBoundedBeforeComposeMeasurement() {
++    val label = "A".repeat(1_000_000)
++    val source = JellyfinMediaSource("identity", label, streams = List(100) { JellyfinMediaStream(it, "Audio", displayTitle = label) })
++    assertEquals(1024, JellyfinSourceText.name(source).length)
++    assertTrue(JellyfinSourceText.description(source).length <= 1536)
++    assertEquals("identity", source.id)
++    assertSame(label, source.name)
++  }
++  @Test fun searchStillFindsTrackTextBeyondTheVisiblePreview() {
++    val source = JellyfinMediaSource("id", "Movie", streams = listOf(
++      JellyfinMediaStream(0, "Audio", displayTitle = "A".repeat(2_000)),
++      JellyfinMediaStream(1, "Audio", displayTitle = "DTS-HD-UNIQUE"),
++    ))
++    assertFalse(JellyfinSourceText.description(source).contains("UNIQUE"))
++    assertEquals(listOf(source), JellyfinSourceFilter.filter(JellyfinSourceFilter.index(listOf(source)), null, "UNIQUE"))
++  }
++}
+diff --git a/app/src/test/java/app/infinity/mpvz/network/BoundedInputStreamTest.kt b/app/src/test/java/app/infinity/mpvz/network/BoundedInputStreamTest.kt
+new file mode 100644
+--- /dev/null
++++ b/app/src/test/java/app/infinity/mpvz/network/BoundedInputStreamTest.kt
+@@ -0,0 +1,31 @@
++/* SPDX-License-Identifier: AGPL-3.0-or-later */
++package app.infinity.mpvz.network
++
++import java.io.ByteArrayInputStream
++import org.junit.Assert.*
++import org.junit.Test
++
++class BoundedInputStreamTest {
++  @Test fun permitsExactLimitAndEof() {
++    val stream = BoundedInputStream(ByteArrayInputStream(ByteArray(8)), 8)
++    assertEquals(8, stream.readBytes().size)
++    assertEquals(8L, stream.bytesRead)
++    assertEquals(-1, stream.read())
++  }
++  @Test fun unknownLengthStopsAtLimitInsteadOfBufferingEntireBody() {
++    val stream = BoundedInputStream(ByteArrayInputStream(ByteArray(1_000)), 8)
++    try { stream.readBytes(); fail("Expected budget failure") } catch (_: ResponseLimitException) {}
++    assertEquals(9L, stream.bytesRead)
++  }
++  @Test fun oneByteReadsAndSkipCannotBypassBudget() {
++    val stream = BoundedInputStream(ByteArrayInputStream(ByteArray(100)), 5)
++    repeat(2) { assertEquals(0, stream.read()) }
++    assertEquals(3L, stream.skip(3))
++    try { stream.skip(1); fail("Expected budget failure") } catch (_: ResponseLimitException) {}
++  }
++  @Test fun emptyBodyAndZeroLengthReadAreValidAtZeroBudget() {
++    val stream = BoundedInputStream(ByteArrayInputStream(byteArrayOf()), 0)
++    assertEquals(0, stream.read(ByteArray(1), 0, 0))
++    assertEquals(-1, stream.read())
++  }
++}
+diff --git a/app/src/test/java/app/infinity/mpvz/presentation/components/RemoteImagePolicyTest.kt b/app/src/test/java/app/infinity/mpvz/presentation/components/RemoteImagePolicyTest.kt
+new file mode 100644
+--- /dev/null
++++ b/app/src/test/java/app/infinity/mpvz/presentation/components/RemoteImagePolicyTest.kt
+@@ -0,0 +1,31 @@
++/* SPDX-License-Identifier: AGPL-3.0-or-later */
++package app.infinity.mpvz.presentation.components
++
++import org.junit.Assert.*
++import org.junit.Test
++
++class RemoteImagePolicyTest {
++  @Test fun former4095PixelCaseIsSampledToCardBudget() {
++    assertEquals(8, RemoteImagePolicy.sampleSize(4095, 4095, RemoteImageSize.CARD))
++  }
++  @Test fun ordinarySmallPosterKeepsItsResolution() {
++    assertEquals(1, RemoteImagePolicy.sampleSize(400, 600, RemoteImageSize.CARD))
++  }
++  @Test fun wideBackdropUsesHeroBudgetAndNotCardBudget() {
++    assertEquals(2, RemoteImagePolicy.sampleSize(2560, 1440, RemoteImageSize.HERO))
++    assertEquals(4, RemoteImagePolicy.sampleSize(2560, 1440, RemoteImageSize.CARD))
++  }
++  @Test fun dimensionsAndTotalPixelsAreBoundedEvenForExtremeAspectRatios() {
++    for (width in listOf(1, 768, 2049, 4095, 16_000, Int.MAX_VALUE)) {
++      for (height in listOf(1, 768, 2049, 4095, 16_000, Int.MAX_VALUE)) {
++        for (size in RemoteImageSize.entries) {
++          val sample = RemoteImagePolicy.sampleSize(width, height, size)
++          val w = (width.toLong() + sample - 1) / sample
++          val h = (height.toLong() + sample - 1) / sample
++          assertTrue(w <= size.maxDimension && h <= size.maxDimension)
++          assertTrue(w * h <= size.maxPixels)
++        }
++      }
++    }
++  }
++}
+diff --git a/app/src/test/java/app/infinity/mpvz/presentation/components/SharedImageRequestsTest.kt b/app/src/test/java/app/infinity/mpvz/presentation/components/SharedImageRequestsTest.kt
+new file mode 100644
+--- /dev/null
++++ b/app/src/test/java/app/infinity/mpvz/presentation/components/SharedImageRequestsTest.kt
+@@ -0,0 +1,65 @@
++/* SPDX-License-Identifier: AGPL-3.0-or-later */
++package app.infinity.mpvz.presentation.components
++
++import kotlinx.coroutines.*
++import kotlinx.coroutines.channels.Channel
++import org.junit.Assert.*
++import org.junit.Test
++import java.util.concurrent.atomic.AtomicInteger
++
++class SharedImageRequestsTest {
++  @Test fun twoViewersShareWorkAndCancellingOneDoesNotCancelTheOther() = runBlocking {
++    val requests = SharedImageRequests<String>()
++    val calls = AtomicInteger()
++    val started = CompletableDeferred<Unit>()
++    val release = CompletableDeferred<Unit>()
++    val first = async { requests.load("same") { calls.incrementAndGet(); started.complete(Unit); release.await(); "bitmap" } }
++    withTimeout(3000) { started.await() }
++    val second = async(start = CoroutineStart.UNDISPATCHED) { requests.load("same") { error("Duplicate work") } }
++    first.cancelAndJoin()
++    release.complete(Unit)
++    assertEquals("bitmap", withTimeout(3000) { second.await() })
++    assertEquals(1, calls.get())
++  }
++  @Test fun lastViewerCancelsInFlightWork() = runBlocking {
++    val requests = SharedImageRequests<Unit>()
++    val started = CompletableDeferred<Unit>()
++    val cancelled = CompletableDeferred<Unit>()
++    val viewer = launch {
++      requests.load("image") {
++        started.complete(Unit)
++        try { awaitCancellation() } finally { cancelled.complete(Unit) }
++      }
++    }
++    withTimeout(3000) { started.await() }
++    viewer.cancelAndJoin()
++    withTimeout(3000) { cancelled.await() }
++  }
++  @Test fun boundsConcurrentDecodesAndCancelledQueuedRequestsNeverStart() = runBlocking {
++    val requests = SharedImageRequests<Unit>(2)
++    val started = Channel<String>(Channel.UNLIMITED)
++    val active = AtomicInteger()
++    val peak = AtomicInteger()
++    fun viewer(index: Int) =
++      async(start = CoroutineStart.UNDISPATCHED) {
++        requests.load("$index") {
++          val count = active.incrementAndGet()
++          peak.updateAndGet { maxOf(it, count) }
++          started.send("$index")
++          try { awaitCancellation() } finally { active.decrementAndGet() }
++        }
++      }
++    val viewers = (1..2).map { viewer(it) }
++    withTimeout(3000) { repeat(2) { started.receive() } }
++    val queued = (3..4).map { viewer(it) }
++    queued.forEach { it.cancelAndJoin() }
++    viewers.forEach { it.cancelAndJoin() }
++    assertEquals(2, peak.get())
++    assertTrue(started.tryReceive().isFailure)
++  }
++  @Test fun aFailureDoesNotPoisonFutureLoadsOfTheSameImage() = runBlocking {
++    val requests = SharedImageRequests<String>()
++    try { requests.load("same") { error("network") }; fail("Expected request failure") } catch (_: IllegalStateException) {}
++    assertEquals("retry", requests.load("same") { "retry" })
++  }
++}

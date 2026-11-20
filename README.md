@@ -4,6 +4,19 @@
 
 Android media-player project for ARM64 devices.
 
+## Memory test candidate .4
+
+`2.1.5-mkvplex.4` / ARM64 build `21500132` is signed with the same key as .3.
+It can update that installation. Android compilation passed; **310 unit tests
+passed, 2 skipped**, and **57 stress tests passed with a 64 MiB heap**. Cases
+include 1000 links and a generated 24 MiB ignored provider field.
+
+[Source patch and retest instructions](patches/STREAMING_MEMORY_FIX.md) ·
+[Signed candidate validation/checksums](releases/v2.1.5-mkvplex.4/)
+
+The candidate APK and full source are prepared for the owner's phone retest.
+The device OOM is **not yet confirmed resolved**; public release remains paused.
+
 ## Polyfin fix — signed build prepared
 
 Version `2.1.5-mkvplex.3` / ARM64 build `21500122` includes the chooser memory,
@@ -57,5 +70,6 @@ The APK has not been independently installed or tested on an Android device here
 ## Attribution and licensing
 
 This project derives from the Mpv-infinity codebase. Preserve upstream copyright notices and applicable license terms. Review the included `LICENSE` and `THIRD_PARTY_LICENSES` before redistribution.
+
 
 
