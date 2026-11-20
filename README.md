@@ -1,5 +1,7 @@
 # Mkvplex Infinity
 
+> **Release paused:** build21500122 (`2.1.5-mkvplex.3`) still exhausted the Android heap during the owner's large-link test. Its earlier unit-test pass did not establish a complete device fix. Do not publish it as the corrected memory release. Candidate `.4` is being validated with streamed metadata, bounded artwork and large-response stress tests; phone validation remains pending.
+
 Android media-player project for ARM64 devices.
 
 ## Polyfin fix — signed build prepared
