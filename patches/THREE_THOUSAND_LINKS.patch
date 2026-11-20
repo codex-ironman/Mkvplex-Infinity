@@ -1,0 +1,136 @@
+diff --git a/app/build.gradle.kts b/app/build.gradle.kts
+--- a/app/build.gradle.kts
++++ b/app/build.gradle.kts
+@@ -47,8 +47,8 @@
+     targetSdk = 36
+     // Stable occupies the top of its version band. Preview uses the next band's commit-count
+     // offset, so Stable -> Preview -> newer Preview -> next Stable is always an Android upgrade.
+-    versionCode = providers.gradleProperty("customVersionCode").map { it.toInt() }.orElse(2150013).get()
+-    versionName = "2.1.5-mkvplex.4"
++    versionCode = providers.gradleProperty("customVersionCode").map { it.toInt() }.orElse(2150014).get()
++    versionName = "2.1.5-mkvplex.5"
+ 
+     vectorDrawables {
+       useSupportLibrary = true
+diff --git a/app/src/main/java/app/infinity/mpvz/data/jellyfin/JellyfinJsonResponse.kt b/app/src/main/java/app/infinity/mpvz/data/jellyfin/JellyfinJsonResponse.kt
+--- a/app/src/main/java/app/infinity/mpvz/data/jellyfin/JellyfinJsonResponse.kt
++++ b/app/src/main/java/app/infinity/mpvz/data/jellyfin/JellyfinJsonResponse.kt
+@@ -18,6 +18,8 @@
+ 
+ /** Projects only used metadata while streaming; unknown/source fields are skipped before allocation. */
+ internal object JellyfinJsonResponse {
++  private val sourceFields = setOf("Id", "Name", "Container", "Size", "Bitrate", "Path", "MediaStreams")
++  private val streamFields = setOf("Index", "Type", "Codec", "Language", "DisplayTitle", "IsExternal", "DeliveryUrl")
+   private val parsing = Semaphore(1)
+   private val fields = setOf(
+     "Items", "TotalRecordCount", "ErrorCode", "Id", "Name", "Type", "CollectionType", "Overview",
+@@ -36,7 +38,10 @@
+   suspend fun read(body: ResponseBody, includeSources: Boolean = false): JsonElement = parsing.withPermit {
+     try {
+       val context = currentCoroutineContext()
+-      read(body.byteStream(), includeSources, checkActive = { context.ensureActive() }).also {
++      read(body.byteStream(), includeSources,
++        maxInputBytes = if (includeSources) 128L * 1024 * 1024 else 32L * 1024 * 1024,
++        maxRetainedBytes = if (includeSources) 32L * 1024 * 1024 else 8L * 1024 * 1024,
++        checkActive = { context.ensureActive() }).also {
+         val root = it as? JsonObject
+         val sourceCount = (root?.get("MediaSources") as? JsonArray)?.size ?: 0
+         val itemCount = (root?.get("Items") as? JsonArray)?.size ?: (it as? JsonArray)?.size ?: 0
+@@ -71,7 +76,7 @@
+   }
+ 
+   @OptIn(ExperimentalSerializationApi::class)
+-  private fun value(reader: JsonReader, includeSources: Boolean, budget: Budget, depth: Int): JsonElement {
++  private fun value(reader: JsonReader, includeSources: Boolean, budget: Budget, depth: Int, scope: String = ""): JsonElement {
+     if (depth > 64) throw ResponseLimitException()
+     budget.add(128)
+     return when (reader.peek()) {
+@@ -80,10 +85,16 @@
+         val values = linkedMapOf<String, JsonElement>()
+         while (reader.hasNext()) {
+           val name = reader.nextName()
+-          if (name !in fields || (!includeSources && name == "MediaSources")) reader.skipValue()
++          val allowed = when (scope) { "sources" -> sourceFields; "streams" -> streamFields; else -> fields }
++          if (name !in allowed || (!includeSources && name == "MediaSources")) reader.skipValue()
+           else {
+             budget.add(64L + name.length * 2L)
+-            values[name] = value(reader, includeSources, budget, depth + 1)
++            val childScope = when {
++              name == "MediaSources" -> "sources"
++              scope == "sources" && name == "MediaStreams" -> "streams"
++              else -> ""
++            }
++            values[name] = value(reader, includeSources, budget, depth + 1, childScope)
+           }
+         }
+         reader.endObject()
+@@ -92,7 +103,7 @@
+       JsonToken.BEGIN_ARRAY -> {
+         reader.beginArray()
+         val values = ArrayList<JsonElement>()
+-        while (reader.hasNext()) values.add(value(reader, includeSources, budget, depth + 1))
++        while (reader.hasNext()) values.add(value(reader, includeSources, budget, depth + 1, scope))
+         reader.endArray()
+         JsonArray(values)
+       }
+diff --git a/app/src/main/java/app/infinity/mpvz/ui/browser/jellyfin/JellyfinSourceDialog.kt b/app/src/main/java/app/infinity/mpvz/ui/browser/jellyfin/JellyfinSourceDialog.kt
+--- a/app/src/main/java/app/infinity/mpvz/ui/browser/jellyfin/JellyfinSourceDialog.kt
++++ b/app/src/main/java/app/infinity/mpvz/ui/browser/jellyfin/JellyfinSourceDialog.kt
+@@ -61,6 +61,7 @@
+   var language by rememberSaveable(selection.serverId, selection.item.id) { mutableStateOf<String?>(null) }
+   var languageMenu by remember { mutableStateOf(false) }
+   var sourceMenu by remember(selection.requestId) { mutableStateOf<String?>(null) }
++  var visibleLimit by remember(selection.requestId, query, language) { mutableStateOf(100) }
+   val indexState = remember(selection.requestId, selection.sources) {
+     mutableStateOf<List<JellyfinSourceFilter.Entry>?>(null)
+   }
+@@ -108,7 +109,7 @@
+           if (filtered.isEmpty()) Text("No links match these filters.")
+           LazyColumn(modifier = Modifier.fillMaxWidth().weight(1f, fill = false).heightIn(max = 400.dp)) {
+             // IDs preserve separate versions with identical names and keep rows stable as links arrive.
+-            itemsIndexed(filtered, key = { _, source -> source.id }) { index, source ->
++            itemsIndexed(filtered.take(visibleLimit), key = { _, source -> source.id }) { index, source ->
+               val status = selection.linkStatus[source.id]
+               Column(
+                 modifier = Modifier.fillMaxWidth().combinedClickable(
+@@ -172,6 +173,11 @@
+               }
+               HorizontalDivider()
+             }
++            if (visibleLimit < filtered.size) item {
++              TextButton(onClick = { visibleLimit += 100 }) {
++                Text("Show 100 more (${minOf(visibleLimit, filtered.size)} of ${filtered.size} shown)")
++              }
++            }
+           }
+         }
+         if (selection.isRefreshing || isIndexing) {
+diff --git a/app/src/test/java/app/infinity/mpvz/data/jellyfin/JellyfinJsonResponseTest.kt b/app/src/test/java/app/infinity/mpvz/data/jellyfin/JellyfinJsonResponseTest.kt
+--- a/app/src/test/java/app/infinity/mpvz/data/jellyfin/JellyfinJsonResponseTest.kt
++++ b/app/src/test/java/app/infinity/mpvz/data/jellyfin/JellyfinJsonResponseTest.kt
+@@ -11,6 +11,25 @@
+ import org.junit.Test
+ 
+ class JellyfinJsonResponseTest {
++  @Test fun threeThousandRichLinksKeepIdentityAndTracksWithoutProviderCatalogCopies() {
++    for (count in listOf(1000, 2000, 3000)) {
++      val links = (0 until count).joinToString(",") { index ->
++        """{"Id":"source-$index","Name":"Movie Hindi English $index","Container":"mkv","Size":123456789,"Bitrate":10000000,"Overview":"${"unused".repeat(100)}","People":[{"Name":"ignored"}],"MediaStreams":[{"Index":0,"Type":"Video","Codec":"hevc","DisplayTitle":"4K HDR","Width":3840},{"Index":1,"Type":"Audio","Codec":"eac3","Language":"hin","DisplayTitle":"Hindi 5.1"},{"Index":2,"Type":"Subtitle","Codec":"srt","Language":"eng","IsExternal":true,"DeliveryUrl":"/Subtitles/$index.srt"}]}"""
++      }
++      val root = JellyfinJsonResponse.read("""{"MediaSources":[$links]}""".byteInputStream(), true,
++        maxInputBytes = 128L * 1024 * 1024, maxRetainedBytes = 32L * 1024 * 1024).jsonObject
++      val sources = JellyfinMediaSourceParser.parse(root, "movie")
++      assertEquals(count, sources.size)
++      assertEquals("source-${count - 1}", sources.last().id)
++      assertEquals("/Subtitles/${count - 1}.srt", sources.last().streams.last().deliveryUrl)
++      val indexed = app.infinity.mpvz.domain.jellyfin.JellyfinSourceFilter.index(sources)
++      assertEquals("source-${count - 1}", app.infinity.mpvz.domain.jellyfin.JellyfinSourceFilter
++        .filter(indexed, "Hindi", "${count - 1}").single().id)
++      assertFalse(root["MediaSources"]!!.jsonArray.first().jsonObject.containsKey("Overview"))
++      assertFalse(root["MediaSources"]!!.jsonArray.first().jsonObject.containsKey("People"))
++    }
++  }
++
+   companion object {
+     /** A large fixture with constant memory, including during a 64 MiB stress run. */
+     fun largeIgnoredField(): InputStream {

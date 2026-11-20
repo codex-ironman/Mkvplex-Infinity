@@ -1,10 +1,28 @@
 # Mkvplex Infinity
 
-> **Release paused:** build21500122 (`2.1.5-mkvplex.3`) still exhausted the Android heap during the owner's large-link test. Its earlier unit-test pass did not establish a complete device fix. Do not publish it as the corrected memory release. Candidate `.4` is being validated with streamed metadata, bounded artwork and large-response stress tests; phone validation remains pending.
+> **Release paused:** build21500122 (`2.1.5-mkvplex.3`) still exhausted the Android heap during the owner's large-link test. Its earlier unit-test pass did not establish a complete device fix. Do not publish it as the corrected memory release. Candidate `.5` adds compact source metadata and a batched chooser tested with 3,000 links. The exact server/phone retest remains pending.
 
 Android media-player project for ARM64 devices.
 
-## Memory test candidate .4
+## Current 3,000-link candidate .5
+
+`2.1.5-mkvplex.5` / ARM64 build `21500142` uses the same signing key as .3/.4.
+It retains compact playback metadata and shows matches in batches of 100; search
+and language filters cover all fetched links. Use fetched-link limit **0 (All)**
+for 1,000–3,000 links.
+
+Android compilation passed: **311 unit tests passed, 2 skipped**, and **58 stress
+tests passed with a 64 MiB heap**, including 1,000-, 2,000- and 3,000-link fixtures
+with audio/subtitles and final-source search.
+
+[Source delta and retest instructions](patches/THREE_THOUSAND_LINKS.md) ·
+[Signed candidate validation/checksums](releases/v2.1.5-mkvplex.5/)
+
+The owner's .4 test displayed “too much metadata” for The Odyssey. The .5 APK is
+prepared for that phone retest; the real-device fix is not yet confirmed.
+APK upload/publication to GitHub remains pending.
+
+## Previous memory test candidate .4
 
 `2.1.5-mkvplex.4` / ARM64 build `21500132` is signed with the same key as .3.
 It can update that installation. Android compilation passed; **310 unit tests

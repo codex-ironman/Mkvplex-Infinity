@@ -1,0 +1,67 @@
+{
+  "base_build": 21500132,
+  "candidate_build": 21500142,
+  "version_name": "2.1.5-mkvplex.5",
+  "changed_files": [
+    "app/build.gradle.kts",
+    "app/src/main/java/app/infinity/mpvz/data/jellyfin/JellyfinJsonResponse.kt",
+    "app/src/main/java/app/infinity/mpvz/ui/browser/jellyfin/JellyfinSourceDialog.kt",
+    "app/src/test/java/app/infinity/mpvz/data/jellyfin/JellyfinJsonResponseTest.kt"
+  ],
+  "patch_sha256": "5d913f2a69a9cd8865790f0e214fcebdc42be8ce4a33772c278c72432765c416",
+  "status": "Signed candidate for the same many-link phone test; not a confirmed device fix",
+  "phone_verified": false,
+  "same_new_signing_key_required": true,
+  "apk": "Mkvplex-Infinity-v2.1.5-mkvplex.5-build21500142-ARM64.apk",
+  "apk_sha256": "34a673fb619c529e3193e374678c260626e792da86fac18844a4edd8a8bede56",
+  "apk_size_bytes": 112483212,
+  "application_id": "app.infinity.mpvz.mkvplex",
+  "abi": "arm64-v8a",
+  "signed": true,
+  "signing_certificate_sha256": "f786eb6650fa04cb86599cd6e85233ffc794347c5763fb5019796df0d028f535",
+  "updates_build21500122_without_uninstall": true,
+  "signature_schemes": {
+    "v1": true,
+    "v2": true,
+    "v3": true
+  },
+  "zipalign_page_kib": 16,
+  "release_debuggable": false,
+  "android_compilation_verified": true,
+  "android_unit_tests": {
+    "tests": 313,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 2
+  },
+  "memory_stress_tests": {
+    "tests": 58,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "heap_limit_mib": 64
+  },
+  "large_response_fixture_mib": 24,
+  "normal_link_list_fixture_count": 3000,
+  "metadata_input_limit_mib": 128,
+  "metadata_estimated_retained_budget_mib": 32,
+  "metadata_parallelism": 1,
+  "image_encoded_limit_mib": 16,
+  "image_parallelism": 2,
+  "card_max_pixels": 393216,
+  "hero_max_pixels": 1327104,
+  "source_name_display_max_chars": 1024,
+  "source_description_display_max_chars": 1536,
+  "native_libraries_identical_to_previous": 25,
+  "previous_non_profile_assets_preserved": 219,
+  "new_license_assets": 1,
+  "native_normalized_from_previous": [
+    "lib/arm64-v8a/libquickjs.so",
+    "lib/arm64-v8a/libtorrent4j.so"
+  ],
+  "raw_gradle_apk_sha256": "3802437a842ec058d7ad91409324397bb98ce2264ffd2367ca5a3f5b71544652",
+  "previous_signed_apk_sha256": "9e04eb72497a5bd8c7e7838a475d3f6ff7f7360e9cd117a04188a6fe8f44d944",
+  "remaining_validation": [
+    "Repeat the same many-link Polyfin chooser flow on the reported OnePlus Android 16 device"
+  ]
+}
