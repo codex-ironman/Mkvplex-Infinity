@@ -1,0 +1,33 @@
+{
+  "base_build": 21500122,
+  "candidate_build": 21500132,
+  "version_name": "2.1.5-mkvplex.4",
+  "changed_files": [
+    "app/build.gradle.kts",
+    "app/src/main/assets/licenses/Gson-Apache-2.0.txt",
+    "app/src/main/java/app/infinity/mpvz/App.kt",
+    "app/src/main/java/app/infinity/mpvz/data/jellyfin/JellyfinClient.kt",
+    "app/src/main/java/app/infinity/mpvz/data/jellyfin/JellyfinJsonResponse.kt",
+    "app/src/main/java/app/infinity/mpvz/data/jellyfin/JellyfinSourceLoader.kt",
+    "app/src/main/java/app/infinity/mpvz/domain/jellyfin/JellyfinSourceErrors.kt",
+    "app/src/main/java/app/infinity/mpvz/domain/jellyfin/JellyfinSourceFilter.kt",
+    "app/src/main/java/app/infinity/mpvz/domain/jellyfin/JellyfinSourceText.kt",
+    "app/src/main/java/app/infinity/mpvz/network/BoundedInputStream.kt",
+    "app/src/main/java/app/infinity/mpvz/presentation/components/RemoteImage.kt",
+    "app/src/main/java/app/infinity/mpvz/presentation/components/RemoteImagePolicy.kt",
+    "app/src/main/java/app/infinity/mpvz/presentation/components/SharedImageRequests.kt",
+    "app/src/main/java/app/infinity/mpvz/ui/browser/jellyfin/JellyfinHeroArtwork.kt",
+    "app/src/main/java/app/infinity/mpvz/ui/browser/jellyfin/JellyfinSourceDialog.kt",
+    "app/src/main/java/app/infinity/mpvz/utils/AppMemoryDiagnostics.kt",
+    "app/src/test/java/app/infinity/mpvz/data/jellyfin/JellyfinJsonResponseTest.kt",
+    "app/src/test/java/app/infinity/mpvz/data/jellyfin/JellyfinSourceLoaderTest.kt",
+    "app/src/test/java/app/infinity/mpvz/domain/jellyfin/JellyfinSourceTextTest.kt",
+    "app/src/test/java/app/infinity/mpvz/network/BoundedInputStreamTest.kt",
+    "app/src/test/java/app/infinity/mpvz/presentation/components/RemoteImagePolicyTest.kt",
+    "app/src/test/java/app/infinity/mpvz/presentation/components/SharedImageRequestsTest.kt"
+  ],
+  "patch_sha256": "217de6eca002bad8064aa82b91b0b29910e7961e4f9ff6c575a11743d707de7e",
+  "status": "Android compilation and full/stress tests in progress",
+  "phone_verified": false,
+  "same_new_signing_key_required": true
+}
