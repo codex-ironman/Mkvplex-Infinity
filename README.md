@@ -2,19 +2,25 @@
 
 Android media-player project for ARM64 devices.
 
-## Polyfin fix build — signing pending
+## Polyfin fix — signed build prepared
 
-The [source patch](patches/POLYFIN_MEMORY_FIX.patch) addresses source-chooser
-memory exhaustion, keeps link-loading progress visible during refresh, and
-prevents waiting probes from starting after chooser cancellation.
+Version `2.1.5-mkvplex.3` / ARM64 build `21500122` includes the chooser memory,
+link-loading progress and cancellation fixes. Android unit tests: **287 passed,
+2 skipped**. The signed APK passed v1/v2/v3 signature verification and 16 KiB
+alignment checks.
 
-Version `2.1.5-mkvplex.3` / ARM64 build `21500122` compiled successfully.
-Android unit tests: **287 passed, 2 skipped**.
-The verified release build is unsigned; publication of the fixed APK is waiting
-for the original private signing key, which is excluded from the full source.
-The older `.2` draft below predates these fixes.
+This release uses a **new owner-authorized signing key**. Uninstall the old
+build21500112 before installation; local settings/sign-ins may be removed.
+Subsequent updates will reuse the new key.
 
-See [rebuild instructions and validation](patches/README.md).
+- APK SHA256: `9e04eb72497a5bd8c7e7838a475d3f6ff7f7360e9cd117a04188a6fe8f44d944`
+- Certificate SHA256: `f786eb6650fa04cb86599cd6e85233ffc794347c5763fb5019796df0d028f535`
+- [Signed build validation and public certificate](releases/v2.1.5-mkvplex.3/)
+- [Source patch and rebuild instructions](patches/README.md)
+
+The fixed signed APK and private recovery backup are prepared. GitHub release
+upload is pending. The private key/password are excluded from public artifacts.
+The older .2 draft below predates these fixes.
 
 ## Prepared artifacts
 
@@ -49,4 +55,5 @@ The APK has not been independently installed or tested on an Android device here
 ## Attribution and licensing
 
 This project derives from the Mpv-infinity codebase. Preserve upstream copyright notices and applicable license terms. Review the included `LICENSE` and `THIRD_PARTY_LICENSES` before redistribution.
+
 

@@ -1,0 +1,17 @@
+Verifies
+Verified using v1 scheme (JAR signing): false
+Verified using v2 scheme (APK Signature Scheme v2): true
+Verified using v3 scheme (APK Signature Scheme v3): true
+Verified using v3.1 scheme (APK Signature Scheme v3.1): false
+Verified using v4 scheme (APK Signature Scheme v4): false
+Verified for SourceStamp: false
+Number of signers: 1
+Signer #1 certificate DN: CN=Mkvplex Infinity, OU=Android Release, O=MKVPLEX
+Signer #1 certificate SHA-256 digest: f786eb6650fa04cb86599cd6e85233ffc794347c5763fb5019796df0d028f535
+Signer #1 certificate SHA-1 digest: 9d244c22b0d1c1e2f7c36a21a18b5a9ee5c4e3a0
+Signer #1 certificate MD5 digest: 4b6ab3dd4ec9a9f142e188c5cea50f53
+Signer #1 key algorithm: RSA
+Signer #1 key size (bits): 4096
+Signer #1 public key SHA-256 digest: 74a23edd03e60220daa3c03ae9253bbef41c8e90eeb3f019c285a4b0dbd54ace
+Signer #1 public key SHA-1 digest: 0de3b6dce302f87b5164dd244deabeb7fa9478d9
+Signer #1 public key MD5 digest: 5a9b1bdcabe041e61d471a931bd74b4c

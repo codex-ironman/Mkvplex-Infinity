@@ -1,0 +1,59 @@
+{
+  "app": "Mkvplex Infinity",
+  "application_id": "app.infinity.mpvz.mkvplex",
+  "version_name": "2.1.5-mkvplex.3",
+  "version_code": 21500122,
+  "abi": "arm64-v8a",
+  "apk": "Mkvplex-Infinity-v2.1.5-mkvplex.3-build21500122-ARM64.apk",
+  "apk_size_bytes": 112454459,
+  "apk_sha256": "9e04eb72497a5bd8c7e7838a475d3f6ff7f7360e9cd117a04188a6fe8f44d944",
+  "signed": true,
+  "installable_update": false,
+  "release_debuggable": false,
+  "zipalign_page_kib": 16,
+  "minified_and_resource_shrunk": false,
+  "android_unit_tests": {
+    "tests": 289,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 2
+  },
+  "android_apk_build_verified": true,
+  "compose_ui_compilation_verified": true,
+  "physical_device_verified": false,
+  "previous_apk_sha256": "b8acf93f90a7bef594d22191932639b3f758d452ff876854ccba71165a04d668",
+  "native_libraries_identical_to_previous": 25,
+  "bundled_non_profile_assets_identical_to_previous": 219,
+  "native_build": "Unchanged native binaries reused from the SHA256-verified original build21500112; Kotlin and Java rebuilt.",
+  "raw_gradle_apk_sha256": "9f1e7d6557a07c1433ec84cd8204a2d1667783a7873af7f0c774a005bfc538fa",
+  "native_packaging": {
+    "replaced_from_original": [
+      "lib/arm64-v8a/libquickjs.so",
+      "lib/arm64-v8a/libtorrent4j.so"
+    ]
+  },
+  "base_full_source_sha256": "79de7f02c804b8f16a9d3eaf9a17299f3f8bd4a487822909691ce2de01eeaef2",
+  "patch_sha256": "bc85fe99026157de0c9e5c0ed61037b37c46b1cda6a8e2143b7ca552abc37937",
+  "targeted_jvm_tests": {
+    "tests": 83,
+    "failures": 0,
+    "heap_limit_mib": 64
+  },
+  "cancellation_stress": {
+    "suite_repetitions": 100,
+    "tests": 400,
+    "failures": 0,
+    "heap_limit_mib": 64
+  },
+  "live_authentication_http_status": 403,
+  "remaining_release_requirements": [],
+  "installable_after_uninstall": true,
+  "signing_certificate_sha256": "f786eb6650fa04cb86599cd6e85233ffc794347c5763fb5019796df0d028f535",
+  "original_signing_certificate_sha256": "bd2bd10a74f182585a3455cfb4019d35277c8afd250226fe420e7c687aa20e85",
+  "signing_key_policy": "New user-authorized release key; uninstall old-key build21500112 once. Reuse this key for subsequent updates.",
+  "signature_schemes": {
+    "v1": true,
+    "v2": true,
+    "v3": true
+  }
+}

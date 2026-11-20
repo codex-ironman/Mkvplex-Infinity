@@ -30,6 +30,8 @@ The release version is 2.1.5-mkvplex.3, ARM64 versionCode 21500122.
 
 ## Rebuild
 
+The new build21500122 FULL-SOURCE ZIP already includes this patch. Skip the git-apply commands below when using that archive; they apply only to the original build21500112 source.
+
 Use the supplied complete source archive, whose SHA256 is
 `79de7f02c804b8f16a9d3eaf9a17299f3f8bd4a487822909691ce2de01eeaef2`.
 The repository's Lite ZIP can receive this patch, but lacks AARs, native
@@ -75,15 +77,35 @@ python3 /path/to/patches/package_native_build21500112.py \
 
 ## Signing and publication
 
-The verified output is **unsigned**, so it is not an installable update and
-has not been published as a fixed APK release. Its filename is
-`Mkvplex-Infinity-v2.1.5-mkvplex.3-build21500122-ARM64-UNSIGNED.apk` and its SHA256 is `f175249536f9bee3ee0c4d220716e6b3b08626fbd7cc2121cd762cf1eaacc30c`.
+The owner authorized a new release key on 20 November 2026 because the previous
+private signing key was unavailable. The fixed ARM64 APK is now signed and
+verified with v1, v2 and v3 schemes and 16 KiB alignment.
 
-The original signing key and password are excluded from the full source
-archive. Sign with that original private key before publishing an update.
-The resulting APK must verify against certificate SHA256
-`bd2bd10a74f182585a3455cfb4019d35277c8afd250226fe420e7c687aa20e85`.
-An APK's public certificate cannot recover its private signing key.
+Uninstall the old build21500112 before installing this release. This can erase
+local settings and saved sign-ins. Future releases must reuse this new key.
 
-The older v2.1.5-mkvplex.2 draft and its build21500112 binary predate these
-fixes. FIX_VALIDATION.json records this new build's verification results.
+- APK: `Mkvplex-Infinity-v2.1.5-mkvplex.3-build21500122-ARM64.apk`
+- APK SHA256: `9e04eb72497a5bd8c7e7838a475d3f6ff7f7360e9cd117a04188a6fe8f44d944`
+- New certificate SHA256: `f786eb6650fa04cb86599cd6e85233ffc794347c5763fb5019796df0d028f535`
+- Android unit tests: 287 passed, 2 skipped.
+- Physical-device playback remains unverified.
+
+The private key and password were saved separately for the owner and are
+excluded from the source archive and GitHub release assets. The public
+certificate and signed-build validation are in
+`releases/v2.1.5-mkvplex.3/`.
+
+To sign a future native-preserved unsigned APK, use the owner's saved private
+backup and the same alias. The PKCS12 key password is the store password.
+
+```bash
+apksigner sign --ks /private/mkvplex-infinity-release.p12 \
+  --ks-key-alias mkvplex-infinity-release \
+  --ks-pass file:/private/store-password.txt \
+  --out /path/to/signed.apk /path/to/native-preserved-unsigned.apk
+apksigner verify --verbose --print-certs /path/to/signed.apk
+```
+
+The older .2 draft predates these fixes. FIX_VALIDATION.json records the
+unsigned compilation checkpoint; releases/v2.1.5-mkvplex.3/RELEASE_VALIDATION.json
+records the signed build.
