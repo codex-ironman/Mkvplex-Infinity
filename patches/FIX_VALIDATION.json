@@ -1,0 +1,31 @@
+{
+  "base_build": 21500112,
+  "base_source_zip_sha256": "d7b655012b2021e868be06f415dd1a6bd583ef538561d69e2356b49088d37486",
+  "patch_sha256": "9ff21cce9774866c2b4a620116173d4ed96e585516e034e6591cb4c139700d3b",
+  "changed_files": [
+    "app/src/main/java/app/infinity/mpvz/data/jellyfin/JellyfinClient.kt",
+    "app/src/main/java/app/infinity/mpvz/data/jellyfin/JellyfinSourceCache.kt",
+    "app/src/main/java/app/infinity/mpvz/domain/jellyfin/JellyfinSourceFilter.kt",
+    "app/src/main/java/app/infinity/mpvz/ui/browser/jellyfin/JellyfinSourceDialog.kt",
+    "app/src/main/java/app/infinity/mpvz/ui/browser/jellyfin/JellyfinViewModel.kt",
+    "app/src/test/java/app/infinity/mpvz/data/jellyfin/EmbyBrowseFieldsTest.kt",
+    "app/src/test/java/app/infinity/mpvz/data/jellyfin/JellyfinClientSourcesTest.kt",
+    "app/src/test/java/app/infinity/mpvz/data/jellyfin/JellyfinSearchClientTest.kt",
+    "app/src/test/java/app/infinity/mpvz/data/jellyfin/JellyfinSourceCacheTest.kt",
+    "app/src/test/java/app/infinity/mpvz/domain/jellyfin/JellyfinSourceFilterTest.kt"
+  ],
+  "jvm_tests": 83,
+  "failures": 0,
+  "heap_limit_mib": 64,
+  "original_filter_large_label_regression": "OutOfMemoryError at 64 MiB",
+  "patched_filter_large_label_regression": "passed at 64 MiB",
+  "harness": "isolated JVM compilation with minimal Android/application test stubs",
+  "android_apk_build_verified": false,
+  "compose_ui_compilation_verified": false,
+  "physical_device_verified": false,
+  "live_authentication_http_status": 403,
+  "rebuild_inputs_required": [
+    "omitted Lite build dependencies",
+    "original update signing key"
+  ]
+}

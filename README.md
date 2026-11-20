@@ -2,6 +2,14 @@
 
 Android media-player build intended for ARM64 devices.
 
+## Polyfin memory and loading fix
+
+The source patch in [patches/POLYFIN_MEMORY_FIX.patch](patches/POLYFIN_MEMORY_FIX.patch)
+reduces retained source/filter metadata and keeps a progress bar visible while
+additional links are fetched. See [patch instructions and validation](patches/README.md).
+The archived build21500112 APK predates this patch. An updated signed APK still
+requires the full build inputs and original update signing key.
+
 ## Current prepared artifact
 
 - Version label: `v2.1.5-mkvplex.2`
