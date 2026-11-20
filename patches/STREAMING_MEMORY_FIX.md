@@ -47,13 +47,36 @@ the native/AAR/font inputs needed for the complete Android build.
 Gson 2.15.0 is added for streaming projection. Its Apache-2.0 license is bundled
 under app/src/main/assets/licenses/ and its source is https://github.com/google/gson.
 
-## Validation status
+## Validation
 
-Android compilation and full/stress tests are in progress. New regression cases
-cover 1000 retained links, a generated 24 MiB ignored provider field, byte/retained
-budgets, sampling bounds, shared-load cancellation, and long source labels.
-The targeted stress run uses a 64 MiB Java heap.
+- Android debug and release Kotlin/Compose compilation passed.
+- Full Android unit suite: 310 passed, 2 skipped, no failures/errors.
+- Stress suite: 57 passed with a 64 MiB heap, including all 1000 links and the
+  generated 24 MiB ignored-field fixture.
+- Candidate APK version/signature/ARM64/non-debuggable/16 KiB alignment checks passed.
+- The signing certificate matches the installed .3 release. Install .4 as an
+  update; another uninstall is not required.
+- All 25 native libraries and 219 existing non-profile assets are preserved.
+  One new asset contains the added Gson dependency's Apache-2.0 license.
 
-The phone's actual retained heap has not been captured. A passing synthetic test
-does not establish that all causes of the reported device OOM are resolved.
-The .3 release is paused, and this candidate needs the same many-link phone test.
+APK: `Mkvplex-Infinity-v2.1.5-mkvplex.4-build21500132-ARM64.apk`
+
+APK SHA256: `ce8ec0b95e043d257bbcd8e67934fd2d735b9e28e479f6c2ddda5c502e055894`
+
+Signing certificate SHA256: `f786eb6650fa04cb86599cd6e85233ffc794347c5763fb5019796df0d028f535`
+
+For a full-source archive already labeled .4, skip patch application. Reproduce
+its native selection from this verified .4 APK using the included
+build-tools/prepare_native_build21500132.py helper, then set MKVPLEX_NATIVE_ROOT
+and use the previous_native.gradle/unshrunk_release.gradle init scripts.
+Use -PcustomVersionCode=2150013 for the ARM64 split versionCode 21500132.
+The build-tools/memory_stress.gradle init script adds :app:memoryStressTest,
+which runs after the complete standard debug unit suite with a 64 MiB heap.
+After Gradle, package_native_build21500132.py preserves the same native engines.
+Sign future updates using the owner's existing private .3 key backup; the key
+and password are excluded from source/public assets.
+
+The phone's actual retained heap has not been captured. Passing these tests
+**does not establish that the reported device OOM is fully resolved**. Repeat
+that same many-link Polyfin flow on the phone with this candidate. The .3
+release remains paused; this .4 build is for that device retest.
