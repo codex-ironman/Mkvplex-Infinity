@@ -1,3 +1,18 @@
+diff --git a/app/build.gradle.kts b/app/build.gradle.kts
+index 0f14803..a846191 100644
+--- a/app/build.gradle.kts
++++ b/app/build.gradle.kts
+@@ -47,8 +47,8 @@ android {
+     targetSdk = 36
+     // Stable occupies the top of its version band. Preview uses the next band's commit-count
+     // offset, so Stable -> Preview -> newer Preview -> next Stable is always an Android upgrade.
+-    versionCode = providers.gradleProperty("customVersionCode").map { it.toInt() }.orElse(2150011).get()
+-    versionName = "2.1.5-mkvplex.2"
++    versionCode = providers.gradleProperty("customVersionCode").map { it.toInt() }.orElse(2150012).get()
++    versionName = "2.1.5-mkvplex.3"
+ 
+     vectorDrawables {
+       useSupportLibrary = true
 diff --git a/app/src/main/java/app/infinity/mpvz/data/jellyfin/JellyfinClient.kt b/app/src/main/java/app/infinity/mpvz/data/jellyfin/JellyfinClient.kt
 index 728c737..d4da3b9 100644
 --- a/app/src/main/java/app/infinity/mpvz/data/jellyfin/JellyfinClient.kt
@@ -241,6 +256,28 @@ index c4bc7f0..5fb3f3d 100644
    @Synchronized
    fun invalidate(server: String, user: String, token: String) {
      entries.keys.removeAll { it.server == server && it.user == user && it.token == token }
+diff --git a/app/src/main/java/app/infinity/mpvz/domain/jellyfin/JellyfinLinkCheckQueue.kt b/app/src/main/java/app/infinity/mpvz/domain/jellyfin/JellyfinLinkCheckQueue.kt
+index 98db2d3..bf9f6b3 100644
+--- a/app/src/main/java/app/infinity/mpvz/domain/jellyfin/JellyfinLinkCheckQueue.kt
++++ b/app/src/main/java/app/infinity/mpvz/domain/jellyfin/JellyfinLinkCheckQueue.kt
+@@ -6,6 +6,7 @@ import kotlinx.coroutines.CoroutineScope
+ import kotlinx.coroutines.Dispatchers
+ import kotlinx.coroutines.Job
+ import kotlinx.coroutines.SupervisorJob
++import kotlinx.coroutines.ensureActive
+ import kotlinx.coroutines.launch
+ import kotlinx.coroutines.sync.Semaphore
+ import kotlinx.coroutines.sync.withPermit
+@@ -33,6 +34,9 @@ internal class JellyfinLinkCheckQueue(
+     scope.launch {
+       try {
+         slots.withPermit {
++          // Cancellation reaches children one at a time. A released slot must
++          // not start another probe after this chooser's parent job is closed.
++          job.ensureActive()
+           val status = try {
+             check(source)
+           } catch (cancelled: CancellationException) {
 diff --git a/app/src/main/java/app/infinity/mpvz/domain/jellyfin/JellyfinSourceFilter.kt b/app/src/main/java/app/infinity/mpvz/domain/jellyfin/JellyfinSourceFilter.kt
 index 6e71348..bf5cb3f 100644
 --- a/app/src/main/java/app/infinity/mpvz/domain/jellyfin/JellyfinSourceFilter.kt

@@ -1,31 +1,53 @@
 {
-  "base_build": 21500112,
-  "base_source_zip_sha256": "d7b655012b2021e868be06f415dd1a6bd583ef538561d69e2356b49088d37486",
-  "patch_sha256": "9ff21cce9774866c2b4a620116173d4ed96e585516e034e6591cb4c139700d3b",
-  "changed_files": [
-    "app/src/main/java/app/infinity/mpvz/data/jellyfin/JellyfinClient.kt",
-    "app/src/main/java/app/infinity/mpvz/data/jellyfin/JellyfinSourceCache.kt",
-    "app/src/main/java/app/infinity/mpvz/domain/jellyfin/JellyfinSourceFilter.kt",
-    "app/src/main/java/app/infinity/mpvz/ui/browser/jellyfin/JellyfinSourceDialog.kt",
-    "app/src/main/java/app/infinity/mpvz/ui/browser/jellyfin/JellyfinViewModel.kt",
-    "app/src/test/java/app/infinity/mpvz/data/jellyfin/EmbyBrowseFieldsTest.kt",
-    "app/src/test/java/app/infinity/mpvz/data/jellyfin/JellyfinClientSourcesTest.kt",
-    "app/src/test/java/app/infinity/mpvz/data/jellyfin/JellyfinSearchClientTest.kt",
-    "app/src/test/java/app/infinity/mpvz/data/jellyfin/JellyfinSourceCacheTest.kt",
-    "app/src/test/java/app/infinity/mpvz/domain/jellyfin/JellyfinSourceFilterTest.kt"
-  ],
-  "jvm_tests": 83,
-  "failures": 0,
-  "heap_limit_mib": 64,
-  "original_filter_large_label_regression": "OutOfMemoryError at 64 MiB",
-  "patched_filter_large_label_regression": "passed at 64 MiB",
-  "harness": "isolated JVM compilation with minimal Android/application test stubs",
-  "android_apk_build_verified": false,
-  "compose_ui_compilation_verified": false,
+  "app": "Mkvplex Infinity",
+  "application_id": "app.infinity.mpvz.mkvplex",
+  "version_name": "2.1.5-mkvplex.3",
+  "version_code": 21500122,
+  "abi": "arm64-v8a",
+  "apk": "Mkvplex-Infinity-v2.1.5-mkvplex.3-build21500122-ARM64-UNSIGNED.apk",
+  "apk_size_bytes": 111900312,
+  "apk_sha256": "f175249536f9bee3ee0c4d220716e6b3b08626fbd7cc2121cd762cf1eaacc30c",
+  "signed": false,
+  "installable_update": false,
+  "release_debuggable": false,
+  "zipalign_page_kib": 16,
+  "minified_and_resource_shrunk": false,
+  "android_unit_tests": {
+    "tests": 289,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 2
+  },
+  "android_apk_build_verified": true,
+  "compose_ui_compilation_verified": true,
   "physical_device_verified": false,
+  "previous_apk_sha256": "b8acf93f90a7bef594d22191932639b3f758d452ff876854ccba71165a04d668",
+  "required_signing_certificate_sha256": "bd2bd10a74f182585a3455cfb4019d35277c8afd250226fe420e7c687aa20e85",
+  "native_libraries_identical_to_previous": 25,
+  "bundled_non_profile_assets_identical_to_previous": 219,
+  "native_build": "Unchanged native binaries reused from the SHA256-verified original build21500112; Kotlin and Java rebuilt.",
+  "raw_gradle_apk_sha256": "9f1e7d6557a07c1433ec84cd8204a2d1667783a7873af7f0c774a005bfc538fa",
+  "native_packaging": {
+    "replaced_from_original": [
+      "lib/arm64-v8a/libquickjs.so",
+      "lib/arm64-v8a/libtorrent4j.so"
+    ]
+  },
+  "base_full_source_sha256": "79de7f02c804b8f16a9d3eaf9a17299f3f8bd4a487822909691ce2de01eeaef2",
+  "patch_sha256": "bc85fe99026157de0c9e5c0ed61037b37c46b1cda6a8e2143b7ca552abc37937",
+  "targeted_jvm_tests": {
+    "tests": 83,
+    "failures": 0,
+    "heap_limit_mib": 64
+  },
+  "cancellation_stress": {
+    "suite_repetitions": 100,
+    "tests": 400,
+    "failures": 0,
+    "heap_limit_mib": 64
+  },
   "live_authentication_http_status": 403,
-  "rebuild_inputs_required": [
-    "omitted Lite build dependencies",
-    "original update signing key"
+  "remaining_release_requirements": [
+    "Original update-signing private key and password"
   ]
 }
