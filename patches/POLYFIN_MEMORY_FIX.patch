@@ -1,0 +1,611 @@
+diff --git a/app/build.gradle.kts b/app/build.gradle.kts
+index 0f14803..a846191 100644
+--- a/app/build.gradle.kts
++++ b/app/build.gradle.kts
+@@ -47,8 +47,8 @@ android {
+     targetSdk = 36
+     // Stable occupies the top of its version band. Preview uses the next band's commit-count
+     // offset, so Stable -> Preview -> newer Preview -> next Stable is always an Android upgrade.
+-    versionCode = providers.gradleProperty("customVersionCode").map { it.toInt() }.orElse(2150011).get()
+-    versionName = "2.1.5-mkvplex.2"
++    versionCode = providers.gradleProperty("customVersionCode").map { it.toInt() }.orElse(2150012).get()
++    versionName = "2.1.5-mkvplex.3"
+ 
+     vectorDrawables {
+       useSupportLibrary = true
+diff --git a/app/src/main/java/app/infinity/mpvz/data/jellyfin/JellyfinClient.kt b/app/src/main/java/app/infinity/mpvz/data/jellyfin/JellyfinClient.kt
+index 728c737..d4da3b9 100644
+--- a/app/src/main/java/app/infinity/mpvz/data/jellyfin/JellyfinClient.kt
++++ b/app/src/main/java/app/infinity/mpvz/data/jellyfin/JellyfinClient.kt
+@@ -57,10 +57,10 @@ class JellyfinClient(
+     httpClient.newBuilder().readTimeout(60, TimeUnit.SECONDS).callTimeout(90, TimeUnit.SECONDS).build()
+   } else httpClient
+ 
+-  // Source lists are fetched on demand, not for every card on a large Emby home page.
+-  private fun browseFields(fields: String): String = if (serverType == MediaServerType.EMBY) {
++  // Resolve version lists only for the viewed item. Large provider source lists
++  // retained on every home card can exhaust the Android heap.
++  private fun browseFields(fields: String): String =
+     fields.split(',').filterNot { it == "MediaSources" }.joinToString(",")
+-  } else fields
+ 
+   // Slow providers may finish after normal browsing requests time out. Available links stay usable.
+   private val sourceHttpClient by lazy {
+@@ -374,7 +374,7 @@ class JellyfinClient(
+           val bodyStr = response.body.string()
+           val root = json.parseToJsonElement(bodyStr).jsonObject
+           val itemsArray = root["Items"]?.jsonArray ?: JsonArray(emptyList())
+-          itemsArray.map { parseItem(it.jsonObject) }
++          itemsArray.map { parseItem(it.jsonObject, includeMediaSources = false) }
+         }
+       }
+     }
+@@ -436,7 +436,7 @@ class JellyfinClient(
+           val bodyStr = response.body.string()
+           val root = json.parseToJsonElement(bodyStr).jsonObject
+           val itemsArray = root["Items"]?.jsonArray ?: JsonArray(emptyList())
+-          itemsArray.map { parseItem(it.jsonObject) }
++          itemsArray.map { parseItem(it.jsonObject, includeMediaSources = false) }
+         }
+       }
+     }
+@@ -476,7 +476,7 @@ class JellyfinClient(
+             } else {
+               root.jsonObject["Items"]?.jsonArray ?: JsonArray(emptyList())
+             }
+-          itemsArray.map { parseItem(it.jsonObject) }
++          itemsArray.map { parseItem(it.jsonObject, includeMediaSources = false) }
+         }
+       }
+     }
+@@ -512,7 +512,7 @@ class JellyfinClient(
+             } else {
+               root.jsonObject["Items"]?.jsonArray ?: JsonArray(emptyList())
+             }
+-          itemsArray.map { parseItem(it.jsonObject) }
++          itemsArray.map { parseItem(it.jsonObject, includeMediaSources = false) }
+         }
+       }
+     }
+@@ -544,7 +544,7 @@ class JellyfinClient(
+           val bodyStr = response.body.string()
+           val root = json.parseToJsonElement(bodyStr).jsonObject
+           val itemsArray = root["Items"]?.jsonArray ?: JsonArray(emptyList())
+-          itemsArray.map { parseItem(it.jsonObject) }
++          itemsArray.map { parseItem(it.jsonObject, includeMediaSources = false) }
+         }
+       }
+     }
+@@ -576,7 +576,7 @@ class JellyfinClient(
+           }
+           val bodyStr = response.body.string()
+           val jsonObj = json.parseToJsonElement(bodyStr).jsonObject
+-          parseItem(jsonObj).also { item ->
++          parseItem(jsonObj, includeMediaSources).also { item ->
+             if (item.isVideo) sourceCache.remember(sourceKey(serverUrl, userId, itemId, token), item.mediaSources, keepRicherStreams = true)
+           }
+         }
+@@ -664,7 +664,7 @@ class JellyfinClient(
+           val root = json.parseToJsonElement(bodyStr).jsonObject
+           val totalRecordCount = root["TotalRecordCount"]?.jsonPrimitive?.intOrNull ?: 0
+           val itemsArray = root["Items"]?.jsonArray ?: JsonArray(emptyList())
+-          val items = itemsArray.map { parseItem(it.jsonObject) }
++          val items = itemsArray.map { parseItem(it.jsonObject, includeMediaSources = false) }
+           val sortedItems =
+             if (!searchTerm.isNullOrBlank()) {
+               items.sortedBy { it.searchPriority }
+@@ -706,7 +706,7 @@ class JellyfinClient(
+           }
+           val bodyStr = response.body.string()
+           val root = json.parseToJsonElement(bodyStr).jsonObject
+-          parseItem(root)
++          parseItem(root, includeMediaSources = false)
+         }
+       }
+     }
+@@ -724,7 +724,7 @@ class JellyfinClient(
+         val base = normalizeUrl(serverUrl)
+         val urlBuilder =
+           StringBuilder(
+-            "$base/Users/$userId/Items?Recursive=true&IncludeItemTypes=Movie,Series&Fields=Overview,PrimaryImageAspectRatio,UserData,ChildCount,CumulativeRunTimeTicks,MediaSources,MediaStreams,ProductionYear,CommunityRating,CriticRating,Genres,OfficialRating,Taglines,SeriesName,SeriesId,SeriesPrimaryImageTag,SeasonName,IndexNumber,ParentIndexNumber,PremiereDate,Status,RemoteTrailers&SortBy=PremiereDate,ProductionYear,SortName&SortOrder=Descending&Limit=$limit",
++            "$base/Users/$userId/Items?Recursive=true&IncludeItemTypes=Movie,Series&Fields=Overview,PrimaryImageAspectRatio,UserData,ChildCount,CumulativeRunTimeTicks,MediaStreams,ProductionYear,CommunityRating,CriticRating,Genres,OfficialRating,Taglines,SeriesName,SeriesId,SeriesPrimaryImageTag,SeasonName,IndexNumber,ParentIndexNumber,PremiereDate,Status,RemoteTrailers&SortBy=PremiereDate,ProductionYear,SortName&SortOrder=Descending&Limit=$limit",
+           )
+         if (!personId.isNullOrBlank()) {
+           urlBuilder.append("&PersonIds=${java.net.URLEncoder.encode(personId, "UTF-8")}")
+@@ -748,7 +748,7 @@ class JellyfinClient(
+           val bodyStr = response.body.string()
+           val root = json.parseToJsonElement(bodyStr).jsonObject
+           val itemsArray = root["Items"]?.jsonArray ?: JsonArray(emptyList())
+-          itemsArray.map { parseItem(it.jsonObject) }
++          itemsArray.map { parseItem(it.jsonObject, includeMediaSources = false) }
+         }
+       }
+     }
+@@ -770,7 +770,7 @@ class JellyfinClient(
+         val path = if (albumArtistsOnly) "Artists/AlbumArtists" else "Artists"
+         val urlBuilder =
+           StringBuilder(
+-            "$base/$path?UserId=$userId&Fields=Overview,PrimaryImageAspectRatio,UserData,ChildCount,MediaSources,MediaStreams,ProductionYear,CommunityRating,CriticRating,Genres,OfficialRating,Taglines,SeriesName,SeasonName,IndexNumber,ParentIndexNumber,PremiereDate,Status&StartIndex=$startIndex&Limit=$limit&SortBy=${sortBy.apiValue}&SortOrder=${sortOrder.apiValue}",
++            "$base/$path?UserId=$userId&Fields=Overview,PrimaryImageAspectRatio,UserData,ChildCount,MediaStreams,ProductionYear,CommunityRating,CriticRating,Genres,OfficialRating,Taglines,SeriesName,SeasonName,IndexNumber,ParentIndexNumber,PremiereDate,Status&StartIndex=$startIndex&Limit=$limit&SortBy=${sortBy.apiValue}&SortOrder=${sortOrder.apiValue}",
+           )
+         if (!parentId.isNullOrBlank()) {
+           urlBuilder.append("&ParentId=$parentId&Recursive=true")
+@@ -792,7 +792,7 @@ class JellyfinClient(
+           val root = json.parseToJsonElement(bodyStr).jsonObject
+           val totalRecordCount = root["TotalRecordCount"]?.jsonPrimitive?.intOrNull ?: 0
+           val itemsArray = root["Items"]?.jsonArray ?: JsonArray(emptyList())
+-          val items = itemsArray.map { parseItem(it.jsonObject) }
++          val items = itemsArray.map { parseItem(it.jsonObject, includeMediaSources = false) }
+           app.infinity.mpvz.domain.jellyfin.JellyfinQueryResult(
+             items = items,
+             totalRecordCount = if (totalRecordCount > 0) totalRecordCount else items.size,
+@@ -828,7 +828,7 @@ class JellyfinClient(
+           val bodyStr = response.body.string()
+           val root = json.parseToJsonElement(bodyStr).jsonObject
+           val itemsArray = root["Items"]?.jsonArray ?: JsonArray(emptyList())
+-          itemsArray.map { parseItem(it.jsonObject) }
++          itemsArray.map { parseItem(it.jsonObject, includeMediaSources = false) }
+         }
+       }
+     }
+@@ -848,7 +848,7 @@ class JellyfinClient(
+         val endpoint = base.toHttpUrl().newBuilder()
+           .addPathSegment("Shows").addPathSegment(seriesId).addPathSegment("Episodes")
+           .addQueryParameter("UserId", userId)
+-          .addQueryParameter("Fields", "Overview,PrimaryImageAspectRatio,UserData,MediaSources,MediaStreams,IndexNumber,ParentIndexNumber,CommunityRating,CriticRating,OfficialRating,PremiereDate")
++          .addQueryParameter("Fields", "Overview,PrimaryImageAspectRatio,UserData,MediaStreams,IndexNumber,ParentIndexNumber,CommunityRating,CriticRating,OfficialRating,PremiereDate")
+           .addQueryParameter("SortBy", "ParentIndexNumber,IndexNumber")
+           .addQueryParameter("SortOrder", "Ascending")
+           .apply {
+@@ -871,7 +871,7 @@ class JellyfinClient(
+           val bodyStr = response.body.string()
+           val root = json.parseToJsonElement(bodyStr).jsonObject
+           val itemsArray = root["Items"]?.jsonArray ?: JsonArray(emptyList())
+-          itemsArray.map { parseItem(it.jsonObject) }
++          itemsArray.map { parseItem(it.jsonObject, includeMediaSources = false) }
+         }
+       }
+     }
+@@ -1203,7 +1203,7 @@ class JellyfinClient(
+       }
+     }
+ 
+-  private fun parseItem(obj: JsonObject): JellyfinItem {
++  private fun parseItem(obj: JsonObject, includeMediaSources: Boolean = true): JellyfinItem {
+     val id = obj["Id"]?.jsonPrimitive?.content ?: ""
+     val name = obj["Name"]?.jsonPrimitive?.content ?: ""
+     val type = obj["Type"]?.jsonPrimitive?.content ?: obj["CollectionType"]?.jsonPrimitive?.content ?: "Folder"
+@@ -1391,7 +1391,7 @@ class JellyfinClient(
+       remoteTrailerUrl = remoteTrailerUrl,
+       canDelete = obj["CanDelete"]?.jsonPrimitive?.booleanOrNull ?: true,
+       people = peopleList,
+-      mediaSources = JellyfinMediaSourceParser.parse(obj, id),
++      mediaSources = if (includeMediaSources) JellyfinMediaSourceParser.parse(obj, id) else emptyList(),
+     )
+   }
+ 
+diff --git a/app/src/main/java/app/infinity/mpvz/data/jellyfin/JellyfinSourceCache.kt b/app/src/main/java/app/infinity/mpvz/data/jellyfin/JellyfinSourceCache.kt
+index c4bc7f0..5fb3f3d 100644
+--- a/app/src/main/java/app/infinity/mpvz/data/jellyfin/JellyfinSourceCache.kt
++++ b/app/src/main/java/app/infinity/mpvz/data/jellyfin/JellyfinSourceCache.kt
+@@ -8,26 +8,27 @@ internal class JellyfinSourceCache(
+   private val lifetimeMillis: Long = 30_000,
+   private val capacity: Int = 16,
+   private val clock: () -> Long = { System.nanoTime() / 1_000_000 },
++  private val maxWeightBytes: Long = 4L * 1024 * 1024,
+ ) {
+   data class Key(val server: String, val user: String, val token: String, val item: String)
+-  private data class Entry(val sources: List<JellyfinMediaSource>, val at: Long)
++  private data class Entry(val sources: List<JellyfinMediaSource>, val at: Long, val weightBytes: Long)
+   private val entries = linkedMapOf<Key, Entry>()
+ 
+   @Synchronized
+   fun get(key: Key): List<JellyfinMediaSource>? {
+-    val entry = entries[key] ?: return null
+-    val age = clock() - entry.at
+-    if (age < 0 || age >= lifetimeMillis) {
+-      entries.remove(key)
+-      return null
+-    }
+-    return entry.sources
++    removeExpired()
++    return entries[key]?.sources
+   }
+ 
+   @Synchronized
+   fun remember(key: Key, sources: List<JellyfinMediaSource>, keepRicherStreams: Boolean = false): List<JellyfinMediaSource> {
+     // Do not cache errors/empty lists or retain unusually large provider responses.
+-    if (sources.isEmpty() || sources.size > 1_024 || capacity <= 0) return sources
++    removeExpired()
++    if (sources.isEmpty()) return sources
++    if (sources.size > 1_024 || capacity <= 0 || maxWeightBytes <= 0) {
++      entries.remove(key)
++      return sources
++    }
+     val previous = if (keepRicherStreams) get(key).orEmpty().associateBy { it.id } else emptyMap()
+     val snapshot = sources.map { source ->
+       val old = previous[source.id]
+@@ -36,11 +37,28 @@ internal class JellyfinSourceCache(
+       } else source
+     }
+     entries.remove(key)
+-    entries[key] = Entry(snapshot, clock())
+-    while (entries.size > capacity) entries.remove(entries.keys.first())
++    val weight = snapshot.sumOf { source ->
++      128L + textWeight(source.id) + textWeight(source.name) + textWeight(source.container) +
++        source.streams.sumOf { stream ->
++          128L + textWeight(stream.type) + textWeight(stream.codec) + textWeight(stream.language) +
++            textWeight(stream.displayTitle) + textWeight(stream.deliveryUrl)
++        }
++    }
++    if (weight > maxWeightBytes) return snapshot
++    entries[key] = Entry(snapshot, clock(), weight)
++    while (entries.size > capacity || entries.values.sumOf { it.weightBytes } > maxWeightBytes) {
++      entries.remove(entries.keys.first())
++    }
+     return snapshot
+   }
+ 
++  private fun textWeight(text: String?): Long = if (text == null) 0 else 32L + text.length.toLong() * 2
++
++  private fun removeExpired() {
++    val now = clock()
++    entries.values.removeAll { now - it.at < 0 || now - it.at >= lifetimeMillis }
++  }
++
+   @Synchronized
+   fun invalidate(server: String, user: String, token: String) {
+     entries.keys.removeAll { it.server == server && it.user == user && it.token == token }
+diff --git a/app/src/main/java/app/infinity/mpvz/domain/jellyfin/JellyfinLinkCheckQueue.kt b/app/src/main/java/app/infinity/mpvz/domain/jellyfin/JellyfinLinkCheckQueue.kt
+index 98db2d3..bf9f6b3 100644
+--- a/app/src/main/java/app/infinity/mpvz/domain/jellyfin/JellyfinLinkCheckQueue.kt
++++ b/app/src/main/java/app/infinity/mpvz/domain/jellyfin/JellyfinLinkCheckQueue.kt
+@@ -6,6 +6,7 @@ import kotlinx.coroutines.CoroutineScope
+ import kotlinx.coroutines.Dispatchers
+ import kotlinx.coroutines.Job
+ import kotlinx.coroutines.SupervisorJob
++import kotlinx.coroutines.ensureActive
+ import kotlinx.coroutines.launch
+ import kotlinx.coroutines.sync.Semaphore
+ import kotlinx.coroutines.sync.withPermit
+@@ -33,6 +34,9 @@ internal class JellyfinLinkCheckQueue(
+     scope.launch {
+       try {
+         slots.withPermit {
++          // Cancellation reaches children one at a time. A released slot must
++          // not start another probe after this chooser's parent job is closed.
++          job.ensureActive()
+           val status = try {
+             check(source)
+           } catch (cancelled: CancellationException) {
+diff --git a/app/src/main/java/app/infinity/mpvz/domain/jellyfin/JellyfinSourceFilter.kt b/app/src/main/java/app/infinity/mpvz/domain/jellyfin/JellyfinSourceFilter.kt
+index 6e71348..bf5cb3f 100644
+--- a/app/src/main/java/app/infinity/mpvz/domain/jellyfin/JellyfinSourceFilter.kt
++++ b/app/src/main/java/app/infinity/mpvz/domain/jellyfin/JellyfinSourceFilter.kt
+@@ -34,43 +34,71 @@ object JellyfinSourceFilter {
+     language("Arabic", "ar,ara", "arabic,ara"),
+     language("Thai", "th,tha", "thai,tha"),
+   )
+-  private val tagPatterns = languages.associate { language ->
+-    language.name to Regex(
+-      "(?<![\\p{L}\\p{N}])(?:${language.tags.joinToString("|") { Regex.escape(it) }})(?![\\p{L}\\p{N}])",
+-      RegexOption.IGNORE_CASE,
+-    )
++  private val tagLanguages = languages.flatMap { language ->
++    language.tags.map { it to language.name }
++  }.toMap()
++  private val codeLanguages = languages.flatMap { language ->
++    language.codes.map { it to language.name }
++  }.toMap()
++  private val searchAliases = languages.associate { it.name to (it.codes + it.tags + it.name) }
++  private val tagPattern = Regex(
++    "(?<![\\p{L}\\p{N}])(?:${tagLanguages.keys.joinToString("|") { Regex.escape(it) }})(?![\\p{L}\\p{N}])",
++    RegexOption.IGNORE_CASE,
++  )
++  private val queryWhitespace = Regex("\\s+")
++  private val unknownLanguage = setOf(UNKNOWN)
++
++  private fun fromTags(text: String): Set<String> {
++    val result = linkedSetOf<String>()
++    for (match in tagPattern.findAll(text)) {
++      tagLanguages[match.value.lowercase(Locale.ROOT)]?.let(result::add)
++    }
++    return result
+   }
+-  private fun fromTags(text: String): Set<String> = tagPatterns.filterValues { it.containsMatchIn(text) }.keys
+ 
+   fun audioLanguages(source: JellyfinMediaSource): Set<String> {
+-    val audio = source.streams.filter { it.type.equals("Audio", true) }
+-    val explicit = audio.flatMap { stream ->
++    val explicit = linkedSetOf<String>()
++    val audioLabels = linkedSetOf<String>()
++    for (stream in source.streams) {
++      if (!stream.type.equals("Audio", true)) continue
+       val value = stream.language.orEmpty().lowercase(Locale.ROOT).trim()
+       val code = value.substringBefore('-').substringBefore('_')
+-      languages.filter { code in it.codes || value in it.tags }.map { it.name }
+-    }.toSet()
++      (codeLanguages[code] ?: tagLanguages[value])?.let(explicit::add)
++    }
+     // Subtitle languages never determine the language of a playable audio version.
+     if (explicit.isNotEmpty()) return explicit
+-    val audioLabels = fromTags(audio.mapNotNull { it.displayTitle }.joinToString(" "))
++    for (stream in source.streams) {
++      if (stream.type.equals("Audio", true)) stream.displayTitle?.let { audioLabels.addAll(fromTags(it)) }
++    }
+     if (audioLabels.isNotEmpty()) return audioLabels
+-    return fromTags(source.name).ifEmpty { setOf(UNKNOWN) }
++    return fromTags(source.name).ifEmpty { unknownLanguage }
+   }
+ 
+-  data class Entry(val source: JellyfinMediaSource, val languages: Set<String>, val searchText: String)
++  data class Entry(val source: JellyfinMediaSource, val languages: Set<String>)
+ 
+-  fun index(sources: List<JellyfinMediaSource>): List<Entry> = sources.map { source ->
+-    val labels = audioLanguages(source)
+-    val aliases = languages.filter { it.name in labels }.flatMap { it.codes + it.tags }
+-    Entry(source, labels, (listOf(source.name, source.description) + labels + aliases).joinToString(" ").lowercase(Locale.ROOT))
+-  }
++  // Keep references to the original metadata. A second combined/lowercase string
++  // per source can exhaust the Android heap for large provider version lists.
++  fun index(sources: List<JellyfinMediaSource>): List<Entry> =
++    sources.map { Entry(it, audioLanguages(it)) }
+ 
+-  fun availableLanguages(entries: List<Entry>): List<String> = entries.flatMap { it.languages }.distinct()
++  fun availableLanguages(entries: List<Entry>): List<String> = entries.asSequence().flatMap { it.languages }.distinct().toList()
+     .sortedWith(compareBy<String> { it == UNKNOWN }.thenBy { it })
+ 
+   fun filter(entries: List<Entry>, language: String?, query: String): List<JellyfinMediaSource> {
+-    val terms = query.lowercase(Locale.ROOT).trim().split(Regex("\\s+")).filter { it.isNotEmpty() }
+-    return entries.filter { entry ->
+-      (language == null || language in entry.languages) && terms.all { it in entry.searchText }
+-    }.map { it.source }
++    val terms = query.trim().split(queryWhitespace).filter { it.isNotEmpty() }
++    return entries.mapNotNull { entry ->
++      if (language != null && language !in entry.languages) return@mapNotNull null
++      if (terms.isEmpty()) return@mapNotNull entry.source
++      // Description is generated by the source model, so build it at most once
++      // for this search and release it instead of retaining it in every entry.
++      val description by lazy(LazyThreadSafetyMode.NONE) { entry.source.description }
++      val matches = terms.all { term ->
++        entry.source.name.contains(term, ignoreCase = true) ||
++          entry.languages.any { label ->
++            label.contains(term, ignoreCase = true) || searchAliases[label].orEmpty().any { it.contains(term, ignoreCase = true) }
++          } || description.contains(term, ignoreCase = true)
++      }
++      entry.source.takeIf { matches }
++    }
+   }
+ }
+diff --git a/app/src/main/java/app/infinity/mpvz/ui/browser/jellyfin/JellyfinSourceDialog.kt b/app/src/main/java/app/infinity/mpvz/ui/browser/jellyfin/JellyfinSourceDialog.kt
+index 2e5bdc2..3d87943 100644
+--- a/app/src/main/java/app/infinity/mpvz/ui/browser/jellyfin/JellyfinSourceDialog.kt
++++ b/app/src/main/java/app/infinity/mpvz/ui/browser/jellyfin/JellyfinSourceDialog.kt
+@@ -17,12 +17,14 @@ import androidx.compose.material3.CircularProgressIndicator
+ import androidx.compose.material3.DropdownMenu
+ import androidx.compose.material3.DropdownMenuItem
+ import androidx.compose.material3.HorizontalDivider
++import androidx.compose.material3.LinearProgressIndicator
+ import androidx.compose.material3.IconButton
+ import androidx.compose.material3.MaterialTheme
+ import androidx.compose.material3.OutlinedTextField
+ import androidx.compose.material3.Text
+ import androidx.compose.material3.TextButton
+ import androidx.compose.runtime.Composable
++import androidx.compose.runtime.LaunchedEffect
+ import androidx.compose.runtime.getValue
+ import androidx.compose.runtime.mutableStateOf
+ import androidx.compose.runtime.remember
+@@ -37,6 +39,8 @@ import app.infinity.mpvz.ui.icons.Icon
+ import app.infinity.mpvz.domain.jellyfin.JellyfinLinkStatus
+ import androidx.compose.ui.unit.dp
+ import app.infinity.mpvz.domain.jellyfin.JellyfinSourceFilter
++import kotlinx.coroutines.Dispatchers
++import kotlinx.coroutines.withContext
+ 
+ @Composable
+ fun JellyfinSourceDialog(
+@@ -55,11 +59,18 @@ fun JellyfinSourceDialog(
+   var language by rememberSaveable(selection.serverId, selection.item.id) { mutableStateOf<String?>(null) }
+   var languageMenu by remember { mutableStateOf(false) }
+   var sourceMenu by remember(selection.requestId) { mutableStateOf<String?>(null) }
+-  val entries = remember(selection.sources) { JellyfinSourceFilter.index(selection.sources) }
++  val indexState = remember(selection.requestId, selection.sources) {
++    mutableStateOf<List<JellyfinSourceFilter.Entry>?>(null)
++  }
++  LaunchedEffect(indexState) {
++    indexState.value = withContext(Dispatchers.Default) { JellyfinSourceFilter.index(selection.sources) }
++  }
++  val isIndexing = indexState.value == null && selection.sources.isNotEmpty()
++  val entries = indexState.value.orEmpty()
+   val languages = remember(entries) { JellyfinSourceFilter.availableLanguages(entries) }
+   val selectedLanguage = language?.takeIf { it in languages }
+-  val filtered = remember(entries, selectedLanguage, query, selection.isLoading) {
+-    if (selection.isLoading) selection.sources else JellyfinSourceFilter.filter(entries, selectedLanguage, query)
++  val filtered = remember(entries, selectedLanguage, query, isIndexing, selection.sources) {
++    if (isIndexing) selection.sources else JellyfinSourceFilter.filter(entries, selectedLanguage, query)
+   }
+   AlertDialog(
+     onDismissRequest = onDismiss,
+@@ -67,7 +78,7 @@ fun JellyfinSourceDialog(
+     text = {
+       Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+         Text(selection.item.displayTitle, style = MaterialTheme.typography.titleSmall)
+-        if (!selection.isLoading && selection.sources.isNotEmpty()) {
++        if (!isIndexing && selection.sources.isNotEmpty()) {
+           OutlinedTextField(
+             value = query, onValueChange = { query = it }, label = { Text("Search links") },
+             singleLine = true, modifier = Modifier.fillMaxWidth(),
+@@ -158,9 +169,10 @@ fun JellyfinSourceDialog(
+             }
+           }
+         }
+-        if (selection.isLoading) {
+-          CircularProgressIndicator()
++        if (selection.isRefreshing || isIndexing) {
++          LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+           Text(when {
++            !selection.isRefreshing -> "Preparing language filters…"
+             selection.retryAttempt > 0 -> "Refreshing links automatically (${selection.retryAttempt}/2)…"
+             selection.sources.isEmpty() -> "Finding links…"
+             else -> "Checking for more links…"
+diff --git a/app/src/main/java/app/infinity/mpvz/ui/browser/jellyfin/JellyfinViewModel.kt b/app/src/main/java/app/infinity/mpvz/ui/browser/jellyfin/JellyfinViewModel.kt
+index 1a326d2..1699d68 100644
+--- a/app/src/main/java/app/infinity/mpvz/ui/browser/jellyfin/JellyfinViewModel.kt
++++ b/app/src/main/java/app/infinity/mpvz/ui/browser/jellyfin/JellyfinViewModel.kt
+@@ -112,6 +112,7 @@ data class JellyfinSourceSelection(
+   val linkStatus: Map<String, JellyfinLinkStatus> = emptyMap(),
+   val checkSourceIds: Set<String> = emptySet(),
+   val retryAttempt: Int = 0,
++  val isRefreshing: Boolean = isLoading,
+ )
+ 
+ data class JellyfinUiState(
+@@ -2044,6 +2045,7 @@ class JellyfinViewModel(
+             sources = update.sources,
+             checkSourceIds = it.sourceSelection!!.checkSourceIds + toCheck,
+             isLoading = update.isLoading,
++            isRefreshing = update.isRefreshing,
+             retryAttempt = update.retryAttempt,
+             error = when {
+               update.isLoading -> null
+diff --git a/app/src/test/java/app/infinity/mpvz/data/jellyfin/EmbyBrowseFieldsTest.kt b/app/src/test/java/app/infinity/mpvz/data/jellyfin/EmbyBrowseFieldsTest.kt
+index 7995234..699bc9a 100644
+--- a/app/src/test/java/app/infinity/mpvz/data/jellyfin/EmbyBrowseFieldsTest.kt
++++ b/app/src/test/java/app/infinity/mpvz/data/jellyfin/EmbyBrowseFieldsTest.kt
+@@ -28,9 +28,10 @@ class EmbyBrowseFieldsTest {
+       assertTrue(seen.all { "MediaSources" !in it.split(',') && "MediaStreams" in it.split(',') })
+     } finally { http.dispatcher.executorService.shutdownNow(); http.connectionPool.evictAll() }
+   }
+-  @Test fun jellyfinListsRetainExistingSourceMetadata() = runBlocking {
++  @Test fun jellyfinListsDeferSourcesAndRetainCodecMetadata() = runBlocking {
+     val http = OkHttpClient.Builder().addInterceptor { chain ->
+-      assertTrue("MediaSources" in chain.request().url.queryParameter("Fields").orEmpty().split(','))
++      val fields = chain.request().url.queryParameter("Fields").orEmpty().split(',')
++      assertTrue("MediaSources" !in fields && "MediaStreams" in fields)
+       Response.Builder().request(chain.request()).protocol(Protocol.HTTP_1_1).code(200).message("Fixture")
+         .body("{\"Items\":[]}".toResponseBody()).build()
+     }.build()
+diff --git a/app/src/test/java/app/infinity/mpvz/data/jellyfin/JellyfinClientSourcesTest.kt b/app/src/test/java/app/infinity/mpvz/data/jellyfin/JellyfinClientSourcesTest.kt
+index 5f9497b..be88853 100644
+--- a/app/src/test/java/app/infinity/mpvz/data/jellyfin/JellyfinClientSourcesTest.kt
++++ b/app/src/test/java/app/infinity/mpvz/data/jellyfin/JellyfinClientSourcesTest.kt
+@@ -42,6 +42,29 @@ class JellyfinClientSourcesTest {
+     assertEquals("Story", detail.overview)
+   }
+ 
++  @Test fun browseResponsesDoNotRetainUnrequestedProviderVersions() = runBlocking {
++    val item = """{"Id":"movie","Name":"Movie","Type":"Movie","MediaSources":[{"Id":"chosen","Name":"Hindi 4K"}]}"""
++    val client = client { request ->
++      assertTrue("MediaSources" !in request.url.queryParameter("Fields")!!.split(','))
++      200 to if (request.url.encodedPath.endsWith("/Latest")) "[$item]" else """{"Items":[$item]}"""
++    }
++    val home = client.getLatestMedia("https://example.test", "user", token = "fake-token").getOrThrow().single()
++    val library = client.getItems("https://example.test", "user", token = "fake-token").getOrThrow().items.single()
++    assertTrue(home.mediaSources.isEmpty())
++    assertTrue(library.mediaSources.isEmpty())
++    assertTrue(client.cachedItemSources("https://example.test", "user", "movie", "fake-token").isEmpty())
++  }
++
++  @Test fun lightweightDetailsIgnoreSourcesThatTheServerIncludesAnyway() = runBlocking {
++    val client = client {
++      200 to """{"Id":"movie","Name":"Movie","Type":"Movie","MediaSources":[{"Id":"chosen","Name":"Hindi 4K"}]}"""
++    }
++    assertTrue(client.getItem("https://example.test", "user", "movie", "fake-token", includeMediaSources = false)
++      .getOrThrow().mediaSources.isEmpty())
++    assertEquals("chosen", client.getItemSources("https://example.test", "user", "movie", "fake-token")
++      .getOrThrow().single().id)
++  }
++
+   @Test fun concurrentPrefetchAndChooserMakeOneHttpRequestForAllVersions() = runBlocking {
+     withTimeout(5000) {
+       val started = CountDownLatch(1)
+diff --git a/app/src/test/java/app/infinity/mpvz/data/jellyfin/JellyfinSearchClientTest.kt b/app/src/test/java/app/infinity/mpvz/data/jellyfin/JellyfinSearchClientTest.kt
+index 2d6d5f8..6fb8846 100644
+--- a/app/src/test/java/app/infinity/mpvz/data/jellyfin/JellyfinSearchClientTest.kt
++++ b/app/src/test/java/app/infinity/mpvz/data/jellyfin/JellyfinSearchClientTest.kt
+@@ -57,10 +57,10 @@ class JellyfinSearchClientTest {
+     }
+   }
+ 
+-  @Test fun ordinaryLibraryBrowsingKeepsItsExistingFieldsAndTimeout() = runBlocking {
++  @Test fun ordinaryLibraryBrowsingDefersSourcesAndKeepsItsExistingTimeout() = runBlocking {
+     val client = client { chain ->
+       assertNull(chain.request().url.queryParameter("SearchTerm"))
+-      assertTrue("MediaSources" in chain.request().url.queryParameter("Fields")!!.split(','))
++      assertFalse("MediaSources" in chain.request().url.queryParameter("Fields")!!.split(','))
+       assertEquals(10_000, chain.readTimeoutMillis())
+       200 to """{"Items":[],"TotalRecordCount":0}"""
+     }
+diff --git a/app/src/test/java/app/infinity/mpvz/data/jellyfin/JellyfinSourceCacheTest.kt b/app/src/test/java/app/infinity/mpvz/data/jellyfin/JellyfinSourceCacheTest.kt
+index 5a1a906..46abcea 100644
+--- a/app/src/test/java/app/infinity/mpvz/data/jellyfin/JellyfinSourceCacheTest.kt
++++ b/app/src/test/java/app/infinity/mpvz/data/jellyfin/JellyfinSourceCacheTest.kt
+@@ -68,4 +68,30 @@ class JellyfinSourceCacheTest {
+     now = 0
+     assertNull(cache.get(key.copy(user = "other")))
+   }
++
++  @Test fun byteBudgetBoundsMetadataAcrossCachedItemsWithoutTruncatingResults() {
++    val cache = JellyfinSourceCache(maxWeightBytes = 1_000)
++    val versions = listOf(source("a").copy(name = "X".repeat(250)))
++    cache.remember(key, versions)
++    cache.remember(key.copy(item = "next"), versions)
++    assertNull(cache.get(key))
++    assertEquals(versions, cache.get(key.copy(item = "next")))
++
++    val oversized = versions.map { it.copy(streams = listOf(
++      JellyfinMediaStream(0, "Subtitle", deliveryUrl = "x".repeat(1_000)),
++    )) }
++    assertEquals(oversized, cache.remember(key.copy(item = "next"), oversized))
++    assertNull(cache.get(key.copy(item = "next")))
++  }
++
++  @Test fun expiredItemsAreReleasedWhileOtherItemsAreUsed() {
++    var now = 0L
++    val cache = JellyfinSourceCache(clock = { now })
++    cache.remember(key, listOf(source("old")))
++    now = 30_000
++    cache.remember(key.copy(item = "new"), listOf(source("new")))
++    // Moving the clock back must not resurrect an expired entry left in the map.
++    now = 1
++    assertNull(cache.get(key))
++  }
+ }
+diff --git a/app/src/test/java/app/infinity/mpvz/domain/jellyfin/JellyfinSourceFilterTest.kt b/app/src/test/java/app/infinity/mpvz/domain/jellyfin/JellyfinSourceFilterTest.kt
+index 057d5e5..1be9fa1 100644
+--- a/app/src/test/java/app/infinity/mpvz/domain/jellyfin/JellyfinSourceFilterTest.kt
++++ b/app/src/test/java/app/infinity/mpvz/domain/jellyfin/JellyfinSourceFilterTest.kt
+@@ -52,4 +52,32 @@ class JellyfinSourceFilterTest {
+     assertEquals(listOf("c"), JellyfinSourceFilter.filter(entries, "Unspecified", "").map { it.id })
+     assertEquals(listOf("Hindi", "Unspecified"), JellyfinSourceFilter.availableLanguages(entries))
+   }
++
++  @Test fun matchingKeepsUnicodeBoundariesAndAllLanguagesInAudioLabels() {
++    val item = source(name = "Movie").copy(streams = listOf(
++      JellyfinMediaStream(1, "Audio", displayTitle = "हिंदी / Tamil"),
++      JellyfinMediaStream(2, "Audio", displayTitle = "English"),
++    ))
++    assertEquals(setOf("Hindi", "Tamil", "English"), JellyfinSourceFilter.audioLanguages(item))
++    assertEquals(setOf("Unspecified"), JellyfinSourceFilter.audioLanguages(source(name = "HindiEnglish")))
++  }
++
++  @Test fun searchKeepsDescriptionFieldsAndLanguageAliases() {
++    val item = source("a", "Movie", "hin").copy(container = "mkv", bitrate = 10_000_000,
++      streams = listOf(JellyfinMediaStream(1, "Audio", language = "hin", displayTitle = "DTS-HD")))
++    val entries = JellyfinSourceFilter.index(listOf(item))
++    assertEquals(listOf(item), JellyfinSourceFilter.filter(entries, "Hindi", "HI mkv dts 10.0"))
++  }
++
++  @Test fun longProviderLabelsDoNotCreateRetainedCopiesDuringIndexing() {
++    // Run this suite with a 64 MiB heap. The former concatenated/lowercase index
++    // retains over 128 MiB for this response and fails before it can be searched.
++    val label = "RELEASE ".repeat(131_072) + " Hindi 1080p"
++    val sources = (1..128).map { source(it.toString(), label) }
++    val entries = JellyfinSourceFilter.index(sources)
++    assertEquals(128, entries.size)
++    assertEquals(sources, JellyfinSourceFilter.filter(entries, "Hindi", "1080P"))
++    assertEquals(sources, JellyfinSourceFilter.filter(entries, null, ""))
++    entries.forEach { assertSame(label, it.source.name) }
++  }
+ }

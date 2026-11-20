@@ -2,6 +2,20 @@
 
 Android media-player project for ARM64 devices.
 
+## Polyfin fix build — signing pending
+
+The [source patch](patches/POLYFIN_MEMORY_FIX.patch) addresses source-chooser
+memory exhaustion, keeps link-loading progress visible during refresh, and
+prevents waiting probes from starting after chooser cancellation.
+
+Version `2.1.5-mkvplex.3` / ARM64 build `21500122` compiled successfully.
+Android unit tests: **287 passed, 2 skipped**.
+The verified release build is unsigned; publication of the fixed APK is waiting
+for the original private signing key, which is excluded from the full source.
+The older `.2` draft below predates these fixes.
+
+See [rebuild instructions and validation](patches/README.md).
+
 ## Prepared artifacts
 
 - Release tag: `v2.1.5-mkvplex.2`
@@ -30,8 +44,9 @@ The workflow does not publish the draft release; review it and publish it only a
 
 ## Compatibility and validation
 
-The APK has not been independently installed or tested on an Android device here. The source archive's ZIP integrity is verified, but a clean reproducible build has not been independently confirmed. Dolby Vision/Atmos playback depends on the device, codecs, and output route.
+The APK has not been independently installed or tested on an Android device here. The Polyfin fix has passed Android compilation and unit tests using the complete source and verified prebuilt native binaries. Dolby Vision/Atmos playback depends on the device, codecs, and output route.
 
 ## Attribution and licensing
 
 This project derives from the Mpv-infinity codebase. Preserve upstream copyright notices and applicable license terms. Review the included `LICENSE` and `THIRD_PARTY_LICENSES` before redistribution.
+
