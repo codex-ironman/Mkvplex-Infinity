@@ -1,0 +1,267 @@
+diff --git a/app/build.gradle.kts b/app/build.gradle.kts
+index 2c383bf..db000ca 100644
+--- a/app/build.gradle.kts
++++ b/app/build.gradle.kts
+@@ -47,8 +47,8 @@ android {
+     targetSdk = 36
+     // Stable occupies the top of its version band. Preview uses the next band's commit-count
+     // offset, so Stable -> Preview -> newer Preview -> next Stable is always an Android upgrade.
+-    versionCode = providers.gradleProperty("customVersionCode").map { it.toInt() }.orElse(2150014).get()
+-    versionName = "2.1.5-mkvplex.5"
++    versionCode = providers.gradleProperty("customVersionCode").map { it.toInt() }.orElse(2150015).get()
++    versionName = "2.1.5-mkvplex.6"
+ 
+     vectorDrawables {
+       useSupportLibrary = true
+diff --git a/app/src/main/java/app/infinity/mpvz/data/jellyfin/JellyfinJsonResponse.kt b/app/src/main/java/app/infinity/mpvz/data/jellyfin/JellyfinJsonResponse.kt
+index e9dd9a2..a4cc2cb 100644
+--- a/app/src/main/java/app/infinity/mpvz/data/jellyfin/JellyfinJsonResponse.kt
++++ b/app/src/main/java/app/infinity/mpvz/data/jellyfin/JellyfinJsonResponse.kt
+@@ -18,6 +18,10 @@ import java.io.InputStreamReader
+ 
+ /** Projects only used metadata while streaming; unknown/source fields are skipped before allocation. */
+ internal object JellyfinJsonResponse {
++  // Polyfin can repeat hundreds of subtitle tracks for every version. Bound wire work
++  // separately from the much smaller, shared in-memory projection.
++  internal const val SOURCE_INPUT_LIMIT = 1024L * 1024 * 1024
++  internal const val SOURCE_RETAINED_LIMIT = 32L * 1024 * 1024
+   private val sourceFields = setOf("Id", "Name", "Container", "Size", "Bitrate", "Path", "MediaStreams")
+   private val streamFields = setOf("Index", "Type", "Codec", "Language", "DisplayTitle", "IsExternal", "DeliveryUrl")
+   private val parsing = Semaphore(1)
+@@ -39,8 +43,8 @@ internal object JellyfinJsonResponse {
+     try {
+       val context = currentCoroutineContext()
+       read(body.byteStream(), includeSources,
+-        maxInputBytes = if (includeSources) 128L * 1024 * 1024 else 32L * 1024 * 1024,
+-        maxRetainedBytes = if (includeSources) 32L * 1024 * 1024 else 8L * 1024 * 1024,
++        maxInputBytes = if (includeSources) SOURCE_INPUT_LIMIT else 32L * 1024 * 1024,
++        maxRetainedBytes = if (includeSources) SOURCE_RETAINED_LIMIT else 8L * 1024 * 1024,
+         checkActive = { context.ensureActive() }).also {
+         val root = it as? JsonObject
+         val sourceCount = (root?.get("MediaSources") as? JsonArray)?.size ?: 0
+@@ -56,8 +60,8 @@ internal object JellyfinJsonResponse {
+   fun read(
+     input: InputStream,
+     includeSources: Boolean = false,
+-    maxInputBytes: Long = 32L * 1024 * 1024,
+-    maxRetainedBytes: Long = 8L * 1024 * 1024,
++    maxInputBytes: Long = if (includeSources) SOURCE_INPUT_LIMIT else 32L * 1024 * 1024,
++    maxRetainedBytes: Long = if (includeSources) SOURCE_RETAINED_LIMIT else 8L * 1024 * 1024,
+     checkActive: () -> Unit = {},
+   ): JsonElement {
+     val bounded = BoundedInputStream(input, maxInputBytes, checkActive)
+@@ -72,12 +76,29 @@ internal object JellyfinJsonResponse {
+ 
+   private class Budget(private val maxBytes: Long) {
+     private var used = 0L
++    // Response-local only: subtitle URLs and account-specific metadata never cross requests.
++    private val tracks = HashMap<JsonObject, JsonObject>()
++    private val trackLists = HashMap<JsonArray, JsonArray>()
+     fun add(bytes: Long) { used += bytes; if (used > maxBytes) throw ResponseLimitException() }
++    fun checkpoint(): Long = used
++    fun sharedTrack(value: JsonObject, before: Long): JsonObject {
++      tracks[value]?.let { used = before; add(16); return it }
++      add(64)
++      tracks[value] = value
++      return value
++    }
++    fun sharedTracks(value: JsonArray, before: Long): JsonArray {
++      trackLists[value]?.let { used = before; add(16); return it }
++      add(64)
++      trackLists[value] = value
++      return value
++    }
+   }
+ 
+   @OptIn(ExperimentalSerializationApi::class)
+   private fun value(reader: JsonReader, includeSources: Boolean, budget: Budget, depth: Int, scope: String = ""): JsonElement {
+     if (depth > 64) throw ResponseLimitException()
++    val before = budget.checkpoint()
+     budget.add(128)
+     return when (reader.peek()) {
+       JsonToken.BEGIN_OBJECT -> {
+@@ -98,14 +119,16 @@ internal object JellyfinJsonResponse {
+           }
+         }
+         reader.endObject()
+-        JsonObject(values)
++        val result = JsonObject(values)
++        if (scope == "streams") budget.sharedTrack(result, before) else result
+       }
+       JsonToken.BEGIN_ARRAY -> {
+         reader.beginArray()
+         val values = ArrayList<JsonElement>()
+         while (reader.hasNext()) values.add(value(reader, includeSources, budget, depth + 1, scope))
+         reader.endArray()
+-        JsonArray(values)
++        val result = JsonArray(values)
++        if (scope == "streams") budget.sharedTracks(result, before) else result
+       }
+       JsonToken.STRING -> {
+         val text = reader.nextString()
+diff --git a/app/src/main/java/app/infinity/mpvz/data/jellyfin/JellyfinMediaSourceParser.kt b/app/src/main/java/app/infinity/mpvz/data/jellyfin/JellyfinMediaSourceParser.kt
+index 844e913..090f421 100644
+--- a/app/src/main/java/app/infinity/mpvz/data/jellyfin/JellyfinMediaSourceParser.kt
++++ b/app/src/main/java/app/infinity/mpvz/data/jellyfin/JellyfinMediaSourceParser.kt
+@@ -17,6 +17,8 @@ import java.util.UUID
+ internal object JellyfinMediaSourceParser {
+   fun parse(root: JsonObject, itemId: String): List<JellyfinMediaSource> {
+     val sources = (root["MediaSources"] as? JsonArray).orEmpty()
++    // Keep the response's shared track lists shared after conversion to domain models too.
++    val streamLists = HashMap<JsonArray, List<JellyfinMediaStream>>()
+     val stubId = remuxSecondStubId(itemId)
+     fun isSecondStub(source: JsonObject): Boolean = stubId != null &&
+       source.text("Id")?.let(::uuidText) == stubId && source.text("Path") == null &&
+@@ -46,7 +48,9 @@ internal object JellyfinMediaSourceParser {
+         container = source.text("Container"),
+         size = (source["Size"] as? JsonPrimitive)?.longOrNull,
+         bitrate = (source["Bitrate"] as? JsonPrimitive)?.longOrNull,
+-        streams = parseStreams(source["MediaStreams"] as? JsonArray),
++        streams = (source["MediaStreams"] as? JsonArray)?.let { tracks ->
++          streamLists.getOrPut(tracks) { parseStreams(tracks) }
++        }.orEmpty(),
+       )
+     }
+   }
+diff --git a/app/src/main/java/app/infinity/mpvz/data/jellyfin/JellyfinSourceCache.kt b/app/src/main/java/app/infinity/mpvz/data/jellyfin/JellyfinSourceCache.kt
+index 5fb3f3d..a938345 100644
+--- a/app/src/main/java/app/infinity/mpvz/data/jellyfin/JellyfinSourceCache.kt
++++ b/app/src/main/java/app/infinity/mpvz/data/jellyfin/JellyfinSourceCache.kt
+@@ -37,12 +37,15 @@ internal class JellyfinSourceCache(
+       } else source
+     }
+     entries.remove(key)
++    val countedLists = java.util.Collections.newSetFromMap(
++      java.util.IdentityHashMap<List<app.infinity.mpvz.domain.jellyfin.JellyfinMediaStream>, Boolean>(),
++    )
+     val weight = snapshot.sumOf { source ->
+       128L + textWeight(source.id) + textWeight(source.name) + textWeight(source.container) +
+-        source.streams.sumOf { stream ->
++        16L + if (countedLists.add(source.streams)) 32L + source.streams.sumOf { stream ->
+           128L + textWeight(stream.type) + textWeight(stream.codec) + textWeight(stream.language) +
+             textWeight(stream.displayTitle) + textWeight(stream.deliveryUrl)
+-        }
++        } else 0L
+     }
+     if (weight > maxWeightBytes) return snapshot
+     entries[key] = Entry(snapshot, clock(), weight)
+diff --git a/app/src/test/java/app/infinity/mpvz/data/jellyfin/JellyfinJsonResponseTest.kt b/app/src/test/java/app/infinity/mpvz/data/jellyfin/JellyfinJsonResponseTest.kt
+index 59faa32..1a1afcf 100644
+--- a/app/src/test/java/app/infinity/mpvz/data/jellyfin/JellyfinJsonResponseTest.kt
++++ b/app/src/test/java/app/infinity/mpvz/data/jellyfin/JellyfinJsonResponseTest.kt
+@@ -4,6 +4,7 @@ package app.infinity.mpvz.data.jellyfin
+ import app.infinity.mpvz.network.ResponseLimitException
+ import java.io.ByteArrayInputStream
+ import java.io.InputStream
++import java.io.File
+ import java.io.SequenceInputStream
+ import java.util.Collections
+ import kotlinx.serialization.json.*
+@@ -11,6 +12,84 @@ import org.junit.Assert.*
+ import org.junit.Test
+ 
+ class JellyfinJsonResponseTest {
++  @Test fun repeatedHundredsOfSubtitlesAcrossThreeThousandLinksStayShared() {
++    val tracks = (0 until 420).joinToString(",") { index ->
++      """{"Index":$index,"Type":"Subtitle","Codec":"srt","Language":"eng","DisplayTitle":"English subtitle $index","IsExternal":true,"DeliveryUrl":"/subtitles/$index.srt","UnusedProbe":"${"x".repeat(140)}"}"""
++    }
++    val count = 3000
++    val parts = sequence {
++      yield("""{"MediaSources":[""".byteInputStream())
++      for (index in 0 until count) {
++        yield((if (index == 0) "" else ",").byteInputStream())
++        yield("""{"Id":"version-$index","Name":"Movie $index","MediaStreams":[$tracks]}""".byteInputStream())
++      }
++      yield("]}".byteInputStream())
++    }
++    // Lazy enumeration keeps only one wire-format version at a time.
++    val iterator = parts.iterator()
++    val input = SequenceInputStream(object : java.util.Enumeration<InputStream> {
++      override fun hasMoreElements() = iterator.hasNext()
++      override fun nextElement() = iterator.next()
++    })
++    val root = JellyfinJsonResponse.read(input, true, maxRetainedBytes = 8L * 1024 * 1024).jsonObject
++    val jsonSources = root["MediaSources"]!!.jsonArray
++    assertEquals(count, jsonSources.size)
++    assertSame(jsonSources.first().jsonObject["MediaStreams"], jsonSources.last().jsonObject["MediaStreams"])
++    val sources = JellyfinMediaSourceParser.parse(root, "movie")
++    assertEquals("version-2999", sources.last().id)
++    assertEquals(420, sources.last().streams.size)
++    assertSame(sources.first().streams, sources.last().streams)
++    assertEquals("/subtitles/419.srt", sources.last().streams.last().deliveryUrl)
++  }
++
++  @Test fun onlyExactlyEqualTrackMetadataIsSharedWithinOneResponse() {
++    fun source(id: String, index: Int, url: String) =
++      """{"Id":"$id","MediaStreams":[{"Index":$index,"Type":"Subtitle","Codec":"srt","IsExternal":true,"DeliveryUrl":"$url"}]}"""
++    val text = """{"MediaSources":[${source("one", 7, "/one.srt")},${source("two", 7, "/two.srt")},${source("three", 8, "/one.srt")},${source("four", 7, "/one.srt")}]}"""
++    val root = read(text, true).jsonObject
++    val sources = JellyfinMediaSourceParser.parse(root, "movie")
++    assertNotSame(sources[0].streams, sources[1].streams)
++    assertNotSame(sources[0].streams, sources[2].streams)
++    assertSame(sources[0].streams, sources[3].streams)
++    assertEquals("/two.srt", sources[1].streams.single().deliveryUrl)
++    assertEquals(8, sources[2].streams.single().index)
++    val other = read(text, true).jsonObject
++    assertNotSame(root["MediaSources"]!!.jsonArray.first().jsonObject["MediaStreams"],
++      other["MediaSources"]!!.jsonArray.first().jsonObject["MediaStreams"])
++  }
++
++  @Test fun duplicateTrackRefundsDoNotRemoveTheBudgetForNewUniqueMetadata() {
++    val same = """{"Index":1,"Type":"Subtitle","DeliveryUrl":"/shared.srt"}"""
++    val repeated = (0 until 30).joinToString(",") { """{"Id":"same-$it","MediaStreams":[$same]}""" }
++    val unique = (0 until 40).joinToString(",") {
++      """{"Id":"unique-$it","MediaStreams":[{"Index":1,"Type":"Subtitle","DeliveryUrl":"/$it-${"x".repeat(4096)}.srt"}]}"""
++    }
++    try {
++      JellyfinJsonResponse.read("""{"MediaSources":[$repeated,$unique]}""".byteInputStream(), true,
++        maxRetainedBytes = 128L * 1024)
++      fail("Unique retained metadata must remain bounded")
++    } catch (_: ResponseLimitException) {}
++  }
++
++  @Test fun actualProviderResponseKeepsAllSourceAndTrackIdentities() {
++    val fixture = System.getenv("MKVPLEX_PROVIDER_FIXTURE")?.let(::File)
++    org.junit.Assume.assumeTrue(fixture?.isFile == true)
++    val root = fixture!!.inputStream().use { JellyfinJsonResponse.read(it, true) }.jsonObject
++    val raw = root["MediaSources"]!!.jsonArray
++    val sources = JellyfinMediaSourceParser.parse(root, root["Id"]!!.jsonPrimitive.content)
++    assertEquals(717, sources.size)
++    assertEquals(293818, sources.sumOf { it.streams.size })
++    for ((index, source) in sources.withIndex()) {
++      val json = raw[index].jsonObject
++      assertEquals(json["Id"]!!.jsonPrimitive.content, source.id)
++      assertEquals(json["MediaStreams"]!!.jsonArray.size, source.streams.size)
++    }
++    val uniqueLists = java.util.Collections.newSetFromMap(java.util.IdentityHashMap<List<app.infinity.mpvz.domain.jellyfin.JellyfinMediaStream>, Boolean>())
++    sources.forEach { uniqueLists.add(it.streams) }
++    assertEquals(9, uniqueLists.size)
++    assertTrue(app.infinity.mpvz.domain.jellyfin.JellyfinSourceFilter.index(sources).isNotEmpty())
++  }
++
+   @Test fun threeThousandRichLinksKeepIdentityAndTracksWithoutProviderCatalogCopies() {
+     for (count in listOf(1000, 2000, 3000)) {
+       val links = (0 until count).joinToString(",") { index ->
+diff --git a/app/src/test/java/app/infinity/mpvz/data/jellyfin/JellyfinSourceCacheTest.kt b/app/src/test/java/app/infinity/mpvz/data/jellyfin/JellyfinSourceCacheTest.kt
+index 46abcea..ad4bd68 100644
+--- a/app/src/test/java/app/infinity/mpvz/data/jellyfin/JellyfinSourceCacheTest.kt
++++ b/app/src/test/java/app/infinity/mpvz/data/jellyfin/JellyfinSourceCacheTest.kt
+@@ -10,6 +10,18 @@ class JellyfinSourceCacheTest {
+   private val key = JellyfinSourceCache.Key("https://server.test/base", "user", "fake-token", "ep8")
+   private fun source(id: String) = JellyfinMediaSource(id, "Version $id")
+ 
++  @Test fun sharedSubtitleListsAreChargedOnceButDistinctListsStillUseTheBudget() {
++    val tracks = (0 until 420).map { JellyfinMediaStream(it, "Subtitle", language = "eng", deliveryUrl = "/subtitles/$it.srt") }
++    val sources = (0 until 717).map { source("version-$it").copy(streams = tracks) }
++    val cache = JellyfinSourceCache(maxWeightBytes = 1024L * 1024)
++    cache.remember(key, sources)
++    assertEquals(717, cache.get(key)!!.size)
++    assertSame(tracks, cache.get(key)!!.last().streams)
++    val independent = sources.map { it.copy(streams = tracks.map { track -> track.copy() }) }
++    cache.remember(key, independent)
++    assertNull(cache.get(key))
++  }
++
+   @Test fun recentVersionsAreImmediatelyAvailableAndExpireWithoutExtendingOnRead() {
+     var now = 0L
+     val cache = JellyfinSourceCache(clock = { now })

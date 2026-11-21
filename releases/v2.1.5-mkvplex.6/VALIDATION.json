@@ -1,0 +1,68 @@
+{
+  "version_name": "2.1.5-mkvplex.6",
+  "base_build": 21500142,
+  "candidate_build": 21500152,
+  "status": "Compiled, tested and signed candidate; physical device playback retest pending",
+  "scope": "Common Jellyfin/Polyfin source metadata parser; no title-specific branching",
+  "observed_response": {
+    "decompressed_bytes": 172336578,
+    "sha256": "5959ec30e3b613762f346dc1d2ce6146ee42734ca5735b79b6f04c6822e07b8d",
+    "sources": 717,
+    "track_references": 293818,
+    "distinct_projected_track_lists": 9
+  },
+  "source_response_input_limit_mib": 1024,
+  "source_response_estimated_retained_limit_mib": 32,
+  "browse_response_input_limit_mib": 32,
+  "browse_response_estimated_retained_limit_mib": 8,
+  "phone_verified": false,
+  "signing_certificate_sha256": "f786eb6650fa04cb86599cd6e85233ffc794347c5763fb5019796df0d028f535",
+  "source_patch_sha256": "45686bc0a103075cccfebfad4e5c79d5ebca171fd8d1dbe7a9228833d3788096",
+  "targeted_memory_preflight": {
+    "tests": 22,
+    "failures": 0,
+    "errors": 0,
+    "heap_limit_mib": 64,
+    "actual_provider_response_replayed": true
+  },
+  "baseline_apk_sha256": "34a673fb619c529e3193e374678c260626e792da86fac18844a4edd8a8bede56",
+  "original_full_source_sha256": "79de7f02c804b8f16a9d3eaf9a17299f3f8bd4a487822909691ce2de01eeaef2",
+  "patch_chain": {
+    "POLYFIN_MEMORY_FIX.patch": "bc85fe99026157de0c9e5c0ed61037b37c46b1cda6a8e2143b7ca552abc37937",
+    "STREAMING_MEMORY_FIX.patch": "217de6eca002bad8064aa82b91b0b29910e7961e4f9ff6c575a11743d707de7e",
+    "THREE_THOUSAND_LINKS.patch": "5d913f2a69a9cd8865790f0e214fcebdc42be8ce4a33772c278c72432765c416"
+  },
+  "apk": "Mkvplex-Infinity-v2.1.5-mkvplex.6-build21500152-ARM64.apk",
+  "apk_sha256": "d69b73d5ac48dd0fdeb4e7f73ca0856ac8577d90575936cc2b725dab00add334",
+  "apk_size_bytes": 112483212,
+  "signed": true,
+  "signature_schemes": {
+    "v1": true,
+    "v2": true,
+    "v3": true
+  },
+  "zipalign_page_kib": 16,
+  "release_debuggable": false,
+  "android_unit_tests": {
+    "tests": 318,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 2
+  },
+  "memory_stress_tests": {
+    "tests": 74,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "heap_limit_mib": 64
+  },
+  "actual_provider_response_replayed": true,
+  "all_717_sources_preserved": true,
+  "all_293818_track_references_preserved": true,
+  "native_libraries_preserved": 25,
+  "bundled_non_profile_assets_preserved": 220,
+  "native_normalized": [
+    "lib/arm64-v8a/libquickjs.so",
+    "lib/arm64-v8a/libtorrent4j.so"
+  ]
+}

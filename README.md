@@ -1,10 +1,36 @@
 # Mkvplex Infinity
 
-> **Release paused:** build21500122 (`2.1.5-mkvplex.3`) still exhausted the Android heap during the owner's large-link test. Its earlier unit-test pass did not establish a complete device fix. Do not publish it as the corrected memory release. Candidate `.5` adds compact source metadata and a batched chooser tested with 3,000 links. The exact server/phone retest remains pending.
+> **Release paused:** build21500122 (`2.1.5-mkvplex.3`) still exhausted the Android heap during the owner's large-link test. Its earlier unit-test pass did not establish a complete device fix. Do not publish it as the corrected memory release. Candidate `.6` shares repeated track metadata across every source response. The actual 164 MiB server snapshot and 3,000-link regression pass with a 64 MiB heap; phone UI/playback retesting remains pending.
 
 Android media-player project for ARM64 devices.
 
-## Current 3,000-link candidate .5
+## Current shared-metadata candidate .6
+
+`2.1.5-mkvplex.6` / ARM64 build `21500152` fixes repeated subtitle/track
+metadata in the common parser, with no title-specific branches. The captured
+Polyfin response had **717 links and 293,818 track references**, but only
+**nine distinct projected track lists**, in **172,336,578 bytes**.
+
+Identical track objects/lists are shared during streaming and model conversion.
+Source identity/order, all tracks, distinct subtitle URLs and indexes are preserved.
+Input work is bounded separately from the retained metadata budget. The source
+chooser still shows batches of 100 and searches the complete fetched list.
+
+**316 unit tests passed, 2 skipped; 74 stress tests passed with a 64 MiB heap.**
+This includes the actual captured response and a generated **3,000-link response
+with 420 subtitles per link**. The signed APK passes package/version, v1/v2/v3
+signature and 16 KiB alignment checks; all 25 native libraries and 220 bundled
+non-profile assets match .5. It uses the same signing key as .3/.4/.5.
+
+[Source delta and build/retest notes](patches/SHARED_TRACK_METADATA.md) ·
+[Signed candidate validation/checksums](releases/v2.1.5-mkvplex.6/)
+
+The APK is prepared for the owner's phone retest. Physical-device UI/playback
+is not yet verified, and a .6 APK has not been uploaded/published as a GitHub
+Release. The .5 tests did not cover the repeated-hundreds-of-subtitles payload
+that caused the owner's metadata-limit error.
+
+## Previous 3,000-link candidate .5
 
 `2.1.5-mkvplex.5` / ARM64 build `21500142` uses the same signing key as .3/.4.
 It retains compact playback metadata and shows matches in batches of 100; search
