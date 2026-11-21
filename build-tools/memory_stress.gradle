@@ -1,0 +1,23 @@
+gradle.projectsEvaluated {
+    def app = gradle.rootProject.project(':app')
+    def unit = app.tasks.named('testStandardDebugUnitTest').get()
+    app.tasks.register('memoryStressTest', Test) {
+        dependsOn unit
+        testClassesDirs = unit.testClassesDirs
+        classpath = unit.classpath
+        systemProperties = unit.systemProperties
+        maxHeapSize = '64m'
+        maxParallelForks = 1
+        filter {
+            includeTestsMatching '*JellyfinJsonResponseTest'
+            includeTestsMatching '*JellyfinMediaSourceParserTest'
+            includeTestsMatching '*JellyfinSourceFilterTest'
+            includeTestsMatching '*BoundedInputStreamTest'
+            includeTestsMatching '*JellyfinSourceLoaderTest'
+            includeTestsMatching '*JellyfinSourceCacheTest'
+            includeTestsMatching '*JellyfinSourceTextTest'
+            includeTestsMatching '*RemoteImagePolicyTest'
+            includeTestsMatching '*SharedImageRequestsTest'
+        }
+    }
+}

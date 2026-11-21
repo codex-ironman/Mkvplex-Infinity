@@ -1,0 +1,11 @@
+gradle.beforeProject { project ->
+    if (project.path == ':app') {
+        project.pluginManager.withPlugin('com.android.application') {
+            project.extensions.getByName('androidComponents').finalizeDsl { android ->
+                def release = android.buildTypes.getByName('release')
+                release.setShrinkResources(false)
+                release.setMinifyEnabled(false)
+            }
+        }
+    }
+}

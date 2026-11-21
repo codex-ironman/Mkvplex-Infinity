@@ -1,0 +1,14 @@
+// ARM64 release uses the unchanged native binaries of the preceding verified APK.
+def nativeRoot = System.getenv('MKVPLEX_NATIVE_ROOT')
+assert nativeRoot
+gradle.beforeProject { project ->
+    def modules = [':app': 'com.android.application', ':subtitle-libass': 'com.android.library']
+    if (modules.containsKey(project.path)) {
+        project.pluginManager.withPlugin(modules[project.path]) {
+            project.extensions.getByName('androidComponents').finalizeDsl { android ->
+                android.externalNativeBuild.cmake.path = null
+                android.sourceSets.getByName('main').jniLibs.srcDir(new File(nativeRoot, project.name))
+            }
+        }
+    }
+}
